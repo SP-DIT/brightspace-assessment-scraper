@@ -182,7 +182,6 @@ export default function DomManipulator(scrape, orgId) {
     }
 
     return {
-        initializeAssessmentSelect,
         addScraper,
     };
 }

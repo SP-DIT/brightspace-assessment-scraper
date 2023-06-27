@@ -423,7 +423,6 @@ var BrightspaceAssessmentScraper = (() => {
       document.body.appendChild(containerNode);
     }
     return {
-      initializeAssessmentSelect,
       addScraper: addScraper2
     };
   }
@@ -526,7 +525,7 @@ var BrightspaceAssessmentScraper = (() => {
   }
 
   // src/add-scraper-dom.js
-  function initializeAssessmentSelect2(brightspaceApi, onAddScraper) {
+  function initializeAssessmentSelect(brightspaceApi, onAddScraper) {
     const assessmentSelect = document.getElementById("assessment-select");
     const rubricSelect = document.getElementById("rubric-select");
     const addScraperForm = document.getElementById("scrape-form");
@@ -581,7 +580,7 @@ var BrightspaceAssessmentScraper = (() => {
       localStorage.setItem(`rubrics-${organizationId2}`, JSON.stringify(rubrics));
       domManipulator.addScraper(organizationId2, title, rubricId, evalObjectId);
     }
-    initializeAssessmentSelect2(brightspaceApi, ({ title, rubricId, evalObjectId }) => {
+    initializeAssessmentSelect(brightspaceApi, ({ title, rubricId, evalObjectId }) => {
       registerScraper(title, rubricId, evalObjectId);
     });
   }
