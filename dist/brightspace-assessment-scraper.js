@@ -392,7 +392,7 @@ var BrightspaceAssessmentScraper = (() => {
     return containerNode;
   }
   function DomManipulator(scrape, orgId) {
-    function addScraper2(orgId2, title, rubricId, evalObjectId) {
+    function addScraper(orgId2, title, rubricId, evalObjectId) {
       const containerNode = createContainer(
         title,
         orgId2,
@@ -423,7 +423,7 @@ var BrightspaceAssessmentScraper = (() => {
       document.body.appendChild(containerNode);
     }
     return {
-      addScraper: addScraper2
+      addScraper
     };
   }
 
@@ -574,7 +574,9 @@ var BrightspaceAssessmentScraper = (() => {
     const organizationId2 = new URL(window.location).searchParams.get("ou");
     const domManipulator = DomManipulator(brightspaceApi, scrape, organizationId2);
     const rubrics = JSON.parse(localStorage.getItem(`rubrics-${organizationId2}`) || JSON.stringify([]));
-    rubrics.forEach(({ title, rubricId, evalObjectId }) => addScraper(organizationId2, title, rubricId, evalObjectId));
+    rubrics.forEach(
+      ({ title, rubricId, evalObjectId }) => domManipulator.addScraper(organizationId2, title, rubricId, evalObjectId)
+    );
     function registerScraper(title, rubricId, evalObjectId) {
       rubrics.push({ title, rubricId, evalObjectId });
       localStorage.setItem(`rubrics-${organizationId2}`, JSON.stringify(rubrics));

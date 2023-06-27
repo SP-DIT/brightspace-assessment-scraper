@@ -11,7 +11,9 @@ export default function BrightspaceRubricScraper(brightspaceBase, brightspaceApi
 
     // Read from localStorage
     const rubrics = JSON.parse(localStorage.getItem(`rubrics-${organizationId}`) || JSON.stringify([]));
-    rubrics.forEach(({ title, rubricId, evalObjectId }) => addScraper(organizationId, title, rubricId, evalObjectId));
+    rubrics.forEach(({ title, rubricId, evalObjectId }) =>
+        domManipulator.addScraper(organizationId, title, rubricId, evalObjectId),
+    );
 
     function registerScraper(title, rubricId, evalObjectId) {
         rubrics.push({ title, rubricId, evalObjectId });
