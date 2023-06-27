@@ -37,6 +37,7 @@ function createContainer(title, orgId, onScrape, resultButtonsDefinitions) {
     const resultButtons = resultButtonsDefinitions.map(([title, onClick]) => {
         const button = document.createElement('button');
         button.textContent = title;
+        button.disabled = true;
         button.onclick = onClick;
         return button;
     });
@@ -161,22 +162,22 @@ export default function DomManipulator(scrape, orgId) {
                     evalObjectId,
                     container,
                 }),
-            {
-                'download-checker-verifier': [
+            [
+                [
                     'Download Checker/Verifier Version',
                     ({ container, criteria, studentResult }) => {
                         container.addProgressText('Generating CSV for checking/verifying...');
                         generateCheckingVerifyingCsv(criteria, studentResult, title);
                     },
                 ],
-                'download-SAS': [
+                [
                     'Download SAS Version',
                     ({ container, criteria, studentResult }) => {
                         container.addProgressText('Generating CSV for SAS...');
                         generateSasCsv(criteria, studentResult, title);
                     },
                 ],
-            },
+            ],
         );
         document.body.appendChild(containerNode);
     }

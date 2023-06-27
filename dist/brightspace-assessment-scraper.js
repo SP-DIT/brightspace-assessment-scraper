@@ -295,6 +295,7 @@ var BrightspaceAssessmentScraper = (() => {
     const resultButtons = resultButtonsDefinitions.map(([title2, onClick]) => {
       const button = document.createElement("button");
       button.textContent = title2;
+      button.disabled = true;
       button.onclick = onClick;
       return button;
     });
@@ -403,22 +404,22 @@ var BrightspaceAssessmentScraper = (() => {
           evalObjectId,
           container
         }),
-        {
-          "download-checker-verifier": [
+        [
+          [
             "Download Checker/Verifier Version",
             ({ container, criteria, studentResult }) => {
               container.addProgressText("Generating CSV for checking/verifying...");
               generateCheckingVerifyingCsv(criteria, studentResult, title);
             }
           ],
-          "download-SAS": [
+          [
             "Download SAS Version",
             ({ container, criteria, studentResult }) => {
               container.addProgressText("Generating CSV for SAS...");
               generateSasCsv(criteria, studentResult, title);
             }
           ]
-        }
+        ]
       );
       document.body.appendChild(containerNode);
     }
@@ -572,7 +573,7 @@ var BrightspaceAssessmentScraper = (() => {
     const brightspaceApi = BrightspaceApi2(brightspaceBase, brightspaceApiBase);
     const scrape = Scraper(brightspaceApi);
     const organizationId = new URL(window.location).searchParams.get("ou");
-    const domManipulator = DomManipulator(brightspaceApi, scrape, organizationId);
+    const domManipulator = DomManipulator(scrape, organizationId);
     const rubrics = JSON.parse(localStorage.getItem(`rubrics-${organizationId}`) || JSON.stringify([]));
     rubrics.forEach(
       ({ title, rubricId, evalObjectId }) => domManipulator.addScraper(organizationId, title, rubricId, evalObjectId)

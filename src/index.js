@@ -7,9 +7,9 @@ export default function BrightspaceRubricScraper(brightspaceBase, brightspaceApi
     const brightspaceApi = BrightspaceApi(brightspaceBase, brightspaceApiBase);
     const scrape = Scraper(brightspaceApi);
     const organizationId = new URL(window.location).searchParams.get('ou');
-    const domManipulator = DomManipulator(brightspaceApi, scrape, organizationId);
+    const domManipulator = DomManipulator(scrape, organizationId);
 
-    // Read from localStorage
+    // ad from localStorage
     const rubrics = JSON.parse(localStorage.getItem(`rubrics-${organizationId}`) || JSON.stringify([]));
     rubrics.forEach(({ title, rubricId, evalObjectId }) =>
         domManipulator.addScraper(organizationId, title, rubricId, evalObjectId),
