@@ -24,7 +24,7 @@ var BrightspaceAssessmentScraper = (() => {
   });
 
   // src/api.js
-  function BrightspaceApi2(brightspaceBase, brightspaceApiBase) {
+  function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
     const brightspaceApi = {
       assessmentList: (organizationId) => new URL(`/d2l/api/le/1.8/${organizationId}/dropbox/folders/`, brightspaceApiBase).toString(),
       classList: (organizationId) => new URL(`/d2l/api/le/1.8/${organizationId}/classlist/`, brightspaceBase).toString(),
@@ -467,7 +467,7 @@ var BrightspaceAssessmentScraper = (() => {
       return allCriteria;
     }
     function scrapeStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt) {
-      return BrightspaceApi.getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt).then(
+      return brightspaceApi.getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt).then(
         (criteriaResults) => criteriaResults.map((criteriaResult) => {
           const criteriaLink = criteriaResult.links[0].href.split("/");
           const criteriaId = criteriaLink[criteriaLink.length - 1];
@@ -570,7 +570,7 @@ var BrightspaceAssessmentScraper = (() => {
 
   // src/index.js
   function BrightspaceRubricScraper(brightspaceBase, brightspaceApiBase) {
-    const brightspaceApi = BrightspaceApi2(brightspaceBase, brightspaceApiBase);
+    const brightspaceApi = BrightspaceApi(brightspaceBase, brightspaceApiBase);
     const scrape = Scraper(brightspaceApi);
     const organizationId = new URL(window.location).searchParams.get("ou");
     const domManipulator = DomManipulator(scrape, organizationId);

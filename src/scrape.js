@@ -46,7 +46,7 @@ export default function Scraper(brightspaceApi) {
     }
 
     function scrapeStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt) {
-        return BrightspaceApi.getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt)
+        return brightspaceApi.getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt)
             .then((criteriaResults) =>
                 criteriaResults.map((criteriaResult) => {
                     const criteriaLink = criteriaResult.links[0].href.split('/');
