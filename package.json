@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "esbuild": "^0.18.10"
+  },
+  "scripts": {
+    "build": "esbuild ./src/index.js --bundle --outfile=dist/brightspace-assessment-scraper.js"
+  }
+}
