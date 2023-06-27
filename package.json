@@ -3,6 +3,6 @@
         "esbuild": "^0.18.10"
     },
     "scripts": {
-        "build": "esbuild ./src/index.js --bundle --platform=neutral --outfile=dist/brightspace-assessment-scraper.js"
+        "build": "esbuild ./src/index.js --bundle --global-name=BrightspaceAssessmentScraper --outfile=dist/brightspace-assessment-scraper.js"
     }
 }
