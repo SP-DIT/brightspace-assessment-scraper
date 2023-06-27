@@ -3,7 +3,7 @@ import DomManipulator from './scraper-dom';
 import Scraper from './scrape';
 import { initializeAssessmentSelect } from './add-scraper-dom';
 
-export function BrightspaceRubricScraper(brightspaceBase, brightspaceApiBase) {
+export default function BrightspaceRubricScraper(brightspaceBase, brightspaceApiBase) {
     const brightspaceApi = BrightspaceApi(brightspaceBase, brightspaceApiBase);
     const scrape = Scraper(brightspaceApi);
     const organizationId = new URL(window.location).searchParams.get('ou');
