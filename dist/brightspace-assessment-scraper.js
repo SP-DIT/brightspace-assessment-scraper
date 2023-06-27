@@ -26,24 +26,24 @@ var BrightspaceAssessmentScraper = (() => {
   // src/api.js
   function BrightspaceApi2(brightspaceBase, brightspaceApiBase) {
     const brightspaceApi = {
-      assessmentList: (organizationId2) => new URL(`/d2l/api/le/1.8/${organizationId2}/dropbox/folders/`, brightspaceApiBase).toString(),
-      classList: (organizationId2) => new URL(`/d2l/api/le/1.8/${organizationId2}/classlist/`, brightspaceBase).toString(),
-      sectionList: (organizationId2) => new URL(`/d2l/api/lp/1.8/${organizationId2}/sections/`, brightspaceApiBase).toString(),
+      assessmentList: (organizationId) => new URL(`/d2l/api/le/1.8/${organizationId}/dropbox/folders/`, brightspaceApiBase).toString(),
+      classList: (organizationId) => new URL(`/d2l/api/le/1.8/${organizationId}/classlist/`, brightspaceBase).toString(),
+      sectionList: (organizationId) => new URL(`/d2l/api/lp/1.8/${organizationId}/sections/`, brightspaceApiBase).toString(),
       authToken: () => new URL(`/d2l/lp/auth/oauth2/token`, brightspaceBase).toString(),
-      referrer: (organizationId2) => new URL("/d2l/ap/insights/classEngagement/View?ou=" + organizationId2, brightspaceBase).toString(),
-      rubricsCriteria: (organizationId2, rubricId) => new URL(`/organizations/${organizationId2}/${rubricId}/groups`, brightspaceApiBase).toString(),
+      referrer: (organizationId) => new URL("/d2l/ap/insights/classEngagement/View?ou=" + organizationId, brightspaceBase).toString(),
+      rubricsCriteria: (organizationId, rubricId) => new URL(`/organizations/${organizationId}/${rubricId}/groups`, brightspaceApiBase).toString(),
       rubricsScore: () => new URL("/d2l/lms/competencies/rubric/rubrics_assessment_results.d2l", brightspaceBase),
-      gradesExport: (organizationId2) => new URL(
-        `/d2l/lms/grades/admin/importexport/export/options_edit.d2l?ou=${organizationId2}`,
+      gradesExport: (organizationId) => new URL(
+        `/d2l/lms/grades/admin/importexport/export/options_edit.d2l?ou=${organizationId}`,
         brightspaceBase
       ).toString()
     };
-    async function getClassList(organizationId2) {
-      const response = await fetch(brightspaceApi.classList(organizationId2));
+    async function getClassList(organizationId) {
+      const response = await fetch(brightspaceApi.classList(organizationId));
       return response.json();
     }
-    async function getSectionList(organizationId2, jwt) {
-      const response = await fetch(brightspaceApi.sectionList(organizationId2), {
+    async function getSectionList(organizationId, jwt) {
+      const response = await fetch(brightspaceApi.sectionList(organizationId), {
         headers: { authorization: `Bearer ${jwt}` }
       });
       return response.json();
@@ -73,8 +73,8 @@ var BrightspaceAssessmentScraper = (() => {
       const data = await response.json();
       return data.access_token;
     }
-    async function getRubricCriteria(organizationId2, rubricId, jwt) {
-      const response = await fetch(brightspaceApi.rubricsCriteria(organizationId2, rubricId), {
+    async function getRubricCriteria(organizationId, rubricId, jwt) {
+      const response = await fetch(brightspaceApi.rubricsCriteria(organizationId, rubricId), {
         headers: { authorization: `Bearer ${jwt}` }
       });
       const data = await response.json();
@@ -117,9 +117,9 @@ var BrightspaceAssessmentScraper = (() => {
         })
       );
     }
-    function getAssessmentList(organizationId2) {
-      return getAccessToken2(organizationId2).then(
-        (jwt) => fetch(brightspaceApi.assessmentList(organizationId2), {
+    function getAssessmentList(organizationId) {
+      return getAccessToken2(organizationId).then(
+        (jwt) => fetch(brightspaceApi.assessmentList(organizationId), {
           headers: { authorization: `Bearer ${jwt}` }
         })
       ).then((response) => response.json());
@@ -451,9 +451,9 @@ var BrightspaceAssessmentScraper = (() => {
       });
       return students;
     }
-    async function getRubricCriteria(organizationId2, rubricId, jwt) {
+    async function getRubricCriteria(organizationId, rubricId, jwt) {
       console.log("Getting Rubric Criteria");
-      const criteriaGroups = await brightspaceApi.getRubricCriteria(organizationId2, rubricId, jwt);
+      const criteriaGroups = await brightspaceApi.getRubricCriteria(organizationId, rubricId, jwt);
       const allCriteria = criteriaGroups.map(
         (criteriaGroup) => criteriaGroup.entities.map((criteria) => {
           const name = criteria.properties.name;
@@ -525,7 +525,7 @@ var BrightspaceAssessmentScraper = (() => {
   }
 
   // src/add-scraper-dom.js
-  function initializeAssessmentSelect(brightspaceApi, onAddScraper) {
+  function initializeAssessmentSelect(brightspaceApi, organizationId, onAddScraper) {
     const assessmentSelect = document.getElementById("assessment-select");
     const rubricSelect = document.getElementById("rubric-select");
     const addScraperForm = document.getElementById("scrape-form");
@@ -571,18 +571,18 @@ var BrightspaceAssessmentScraper = (() => {
   function BrightspaceRubricScraper(brightspaceBase, brightspaceApiBase) {
     const brightspaceApi = BrightspaceApi2(brightspaceBase, brightspaceApiBase);
     const scrape = Scraper(brightspaceApi);
-    const organizationId2 = new URL(window.location).searchParams.get("ou");
-    const domManipulator = DomManipulator(brightspaceApi, scrape, organizationId2);
-    const rubrics = JSON.parse(localStorage.getItem(`rubrics-${organizationId2}`) || JSON.stringify([]));
+    const organizationId = new URL(window.location).searchParams.get("ou");
+    const domManipulator = DomManipulator(brightspaceApi, scrape, organizationId);
+    const rubrics = JSON.parse(localStorage.getItem(`rubrics-${organizationId}`) || JSON.stringify([]));
     rubrics.forEach(
-      ({ title, rubricId, evalObjectId }) => domManipulator.addScraper(organizationId2, title, rubricId, evalObjectId)
+      ({ title, rubricId, evalObjectId }) => domManipulator.addScraper(organizationId, title, rubricId, evalObjectId)
     );
     function registerScraper(title, rubricId, evalObjectId) {
       rubrics.push({ title, rubricId, evalObjectId });
-      localStorage.setItem(`rubrics-${organizationId2}`, JSON.stringify(rubrics));
-      domManipulator.addScraper(organizationId2, title, rubricId, evalObjectId);
+      localStorage.setItem(`rubrics-${organizationId}`, JSON.stringify(rubrics));
+      domManipulator.addScraper(organizationId, title, rubricId, evalObjectId);
     }
-    initializeAssessmentSelect(brightspaceApi, ({ title, rubricId, evalObjectId }) => {
+    initializeAssessmentSelect(brightspaceApi, organizationId, ({ title, rubricId, evalObjectId }) => {
       registerScraper(title, rubricId, evalObjectId);
     });
   }

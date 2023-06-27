@@ -21,7 +21,7 @@ export default function BrightspaceRubricScraper(brightspaceBase, brightspaceApi
         domManipulator.addScraper(organizationId, title, rubricId, evalObjectId);
     }
 
-    initializeAssessmentSelect(brightspaceApi, ({ title, rubricId, evalObjectId }) => {
+    initializeAssessmentSelect(brightspaceApi, organizationId, ({ title, rubricId, evalObjectId }) => {
         registerScraper(title, rubricId, evalObjectId);
     });
 }

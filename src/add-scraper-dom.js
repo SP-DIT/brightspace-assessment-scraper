@@ -1,4 +1,4 @@
-export function initializeAssessmentSelect(brightspaceApi, onAddScraper) {
+export function initializeAssessmentSelect(brightspaceApi, organizationId, onAddScraper) {
     // Initialize selects
     const assessmentSelect = document.getElementById('assessment-select');
     const rubricSelect = document.getElementById('rubric-select');

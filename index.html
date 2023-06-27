@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Scrape Rubrics</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <!-- <script
+            src="https://cdn.jsdelivr.net/gh/SP-DIT/brightspace-assessment-scraper@main/dist/brightspace-assessment-scraper.js"
+            type="text/javascript"
+        ></script> -->
+        <script src="./dist/brightspace-assessment-scraper.js" type="text/javascript"></script>
+
+        <link
+            href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    </head>
+    <body>
+        <div>
+            <h1 id="loading">Loading</h1>
+            <form id="scrape-form" hidden>
+                <p>
+                    Assignment:
+                    <select id="assessment-select">
+                        <option disabled selected>Select...</option>
+                    </select>
+                </p>
+                <p>
+                    Rubrics:
+                    <select id="rubric-select"></select>
+                </p>
+                <p><button type="submit">Add Scraper</button></p>
+            </form>
+            <div class="scraper-template" hidden>
+                <div style="border: black solid 1px; padding: 10px; display: inline-block; max-width: 700px">
+                    <h3 style="margin-top: 0px">Title</h3>
+                    <p></p>
+                    <button class="scrape"></button>
+                    <button class="reset" hidden>Reset</button>
+                    <ol class="progress"></ol>
+                    <div class="loading">Progress: <span class="processed">-</span>/<span class="total">-</span></div>
+
+                    <div class="results">
+                        <div class="controls">
+                            <button class="download-checker-verifier" disabled>Download for Checking/Verifying</button>
+                            <button class="download-SAS" disabled>Download for SAS upload</button>
+                        </div>
+                        <div class="table"></div>
+                        <div class="charts">
+                            <canvas class="grades-distribution"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p>
+            <script>
+                const brightspaceBases = { PET: 'https://splms.polite.edu.sg/', CET: 'https://lms.polite.edu.sg' };
+                const brightspaceApiBases = {
+                    PET: 'https://b988e89b-eb2c-401a-999a-94b943da0008.rubrics.api.brightspace.com',
+                    CET: 'https://4493420a-e37c-4d7e-bc33-55d49da1a74d.rubrics.api.brightspace.com',
+                };
+
+                const targetPlatform = 'PET';
+                const brightspaceBase = brightspaceBases[targetPlatform];
+                const brightspaceApiBase = brightspaceApiBases[targetPlatform];
+
+                window.addEventListener('DOMContentLoaded', () => {
+                    BrightspaceAssessmentScraper.default(brightspaceBase, brightspaceApiBase);
+                });
+            </script>
+        </p>
+    </body>
+</html>
