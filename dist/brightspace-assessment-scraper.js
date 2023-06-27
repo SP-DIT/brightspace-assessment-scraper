@@ -318,7 +318,10 @@ var BrightspaceAssessmentScraper = (() => {
       resultButtons.forEach((button) => button.disabled = isDisabled);
     }
     function setResultButtonsOnClick(input) {
-      resultButtons.forEach((button) => button.onclick = () => button.onclick(input));
+      resultButtons.forEach((button) => {
+        const oldOnClick = button.onclick;
+        button.onclick = () => oldOnClick(input);
+      });
     }
     function generateDataTable(data) {
       const classNameColumnIndex = data.headings.indexOf(defaults_default.SAS_CSV_CLASS_COLUMN_NAME);

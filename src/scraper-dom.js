@@ -62,7 +62,10 @@ function createContainer(title, orgId, onScrape, resultButtonsDefinitions) {
         resultButtons.forEach((button) => (button.disabled = isDisabled));
     }
     function setResultButtonsOnClick(input) {
-        resultButtons.forEach((button) => (button.onclick = () => button.onclick(input)));
+        resultButtons.forEach((button) => {
+            const oldOnClick = button.onclick;
+            button.onclick = () => oldOnClick(input);
+        });
     }
     function generateDataTable(data) {
         const classNameColumnIndex = data.headings.indexOf(DEFAULTS.SAS_CSV_CLASS_COLUMN_NAME);
