@@ -94,7 +94,7 @@ export default function Scraper(brightspaceApi) {
         const { orgId, rubricId, container } = config;
         try {
             container.addProgressText('Getting Access Token...');
-            const jwt = await getAccessToken(orgId);
+            const jwt = await brightspaceApi.getAccessToken(orgId);
 
             container.addProgressText('Getting Student List...');
             const students = await getStudentList(orgId, jwt);

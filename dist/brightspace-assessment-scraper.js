@@ -48,7 +48,7 @@ var BrightspaceAssessmentScraper = (() => {
       });
       return response.json();
     }
-    async function getAccessToken2(orgId) {
+    async function getAccessToken(orgId) {
       const xsrfToken = localStorage.getItem("XSRF.Token");
       const response = await fetch(brightspaceApi.authToken(), {
         headers: {
@@ -118,7 +118,7 @@ var BrightspaceAssessmentScraper = (() => {
       );
     }
     function getAssessmentList(organizationId) {
-      return getAccessToken2(organizationId).then(
+      return getAccessToken(organizationId).then(
         (jwt) => fetch(brightspaceApi.assessmentList(organizationId), {
           headers: { authorization: `Bearer ${jwt}` }
         })
@@ -128,7 +128,7 @@ var BrightspaceAssessmentScraper = (() => {
       getAssessmentList,
       getClassList,
       getSectionList,
-      getAccessToken: getAccessToken2,
+      getAccessToken,
       getRubricCriteria,
       getStudentRubricScore
     };
@@ -509,7 +509,7 @@ var BrightspaceAssessmentScraper = (() => {
       const { orgId, rubricId, container } = config;
       try {
         container.addProgressText("Getting Access Token...");
-        const jwt = await getAccessToken(orgId);
+        const jwt = await brightspaceApi.getAccessToken(orgId);
         container.addProgressText("Getting Student List...");
         const students = await getStudentList(orgId, jwt);
         container.setTotalStudent(students.length);
