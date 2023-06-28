@@ -26,37 +26,9 @@ export default function Scraper(brightspaceApi) {
         return students;
     }
 
-    async function getRubricCriteria(organizationId, rubricId, jwt) {
-        console.log('Getting Rubric Criteria');
-        const criteriaGroups = await brightspaceApi.getRubricCriteria(organizationId, rubricId, jwt);
-
-        const allCriteria = criteriaGroups
-            .map((criteriaGroup) =>
-                criteriaGroup.entities.map((criteria) => {
-                    const name = criteria.properties.name;
-                    const max = criteria.properties.outOf;
-                    const criteriaLink = criteria.links[0].href.split('/');
-                    const criteriaId = criteriaLink[criteriaLink.length - 1];
-                    return { name, max, criteriaId };
-                }),
-            )
-            .flat(2);
-
-        return allCriteria;
-    }
-
     function scrapeStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt) {
-        return brightspaceApi.getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt)
-            .then((criteriaResults) =>
-                criteriaResults.map((criteriaResult) => {
-                    const criteriaLink = criteriaResult.links[0].href.split('/');
-                    const criteriaId = criteriaLink[criteriaLink.length - 1];
-                    return {
-                        id: +criteriaId,
-                        score: +criteriaResult.properties.score,
-                    };
-                }),
-            )
+        return brightspaceApi
+            .getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt)
             .then((scores) => {
                 const total = scores.reduce((total, { score }) => total + score, 0);
                 scores.push({ id: 'total', score: total });
@@ -102,7 +74,7 @@ export default function Scraper(brightspaceApi) {
             container.addProgressText(`Found ${students.length} students...`);
 
             container.addProgressText(`Scraping rubric...`);
-            const getCriteriaPromise = getRubricCriteria(orgId, rubricId, jwt);
+            const getCriteriaPromise = brightspaceApi.getRubricCriteria(orgId, rubricId, jwt);
             const scrapePromise = scrapeStudent(students, jwt, config);
             const [criteria, studentResult] = await Promise.all([getCriteriaPromise, scrapePromise]);
 

@@ -3,6 +3,10 @@
         "esbuild": "^0.18.10"
     },
     "scripts": {
+        "start": "npm run build -- --watch --define:process.env.NODE_ENV=\\\"test\\\"  --outfile=dist/brightspace-assessment-scraper-test.js",
         "build": "esbuild ./src/index.js --bundle --global-name=BrightspaceAssessmentScraper --outfile=dist/brightspace-assessment-scraper.js"
+    },
+    "devDependencies": {
+        "@faker-js/faker": "^8.0.2"
     }
 }

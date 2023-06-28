@@ -23,134 +23,6 @@ var BrightspaceAssessmentScraper = (() => {
     default: () => BrightspaceRubricScraper
   });
 
-  // src/api.js
-  function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
-    const brightspaceApi = {
-      assessmentList: (organizationId) => new URL(`/d2l/api/le/1.8/${organizationId}/dropbox/folders/`, brightspaceApiBase).toString(),
-      classList: (organizationId) => new URL(`/d2l/api/le/1.8/${organizationId}/classlist/`, brightspaceBase).toString(),
-      sectionList: (organizationId) => new URL(`/d2l/api/lp/1.8/${organizationId}/sections/`, brightspaceApiBase).toString(),
-      authToken: () => new URL(`/d2l/lp/auth/oauth2/token`, brightspaceBase).toString(),
-      referrer: (organizationId) => new URL("/d2l/ap/insights/classEngagement/View?ou=" + organizationId, brightspaceBase).toString(),
-      rubricsCriteria: (organizationId, rubricId) => new URL(`/organizations/${organizationId}/${rubricId}/groups`, brightspaceApiBase).toString(),
-      rubricsScore: () => new URL("/d2l/lms/competencies/rubric/rubrics_assessment_results.d2l", brightspaceBase),
-      gradesExport: (organizationId) => new URL(
-        `/d2l/lms/grades/admin/importexport/export/options_edit.d2l?ou=${organizationId}`,
-        brightspaceBase
-      ).toString()
-    };
-    async function getClassList(organizationId) {
-      const response = await fetch(brightspaceApi.classList(organizationId));
-      return response.json();
-    }
-    async function getSectionList(organizationId, jwt) {
-      const response = await fetch(brightspaceApi.sectionList(organizationId), {
-        headers: { authorization: `Bearer ${jwt}` }
-      });
-      return response.json();
-    }
-    async function getAccessToken(orgId) {
-      const xsrfToken = localStorage.getItem("XSRF.Token");
-      const response = await fetch(brightspaceApi.authToken(), {
-        headers: {
-          accept: "*/*",
-          "accept-language": "en-GB,en;q=0.9,en-US;q=0.8",
-          "content-type": "application/x-www-form-urlencoded",
-          "sec-ch-ua": '" Not;A Brand";v="99", "Microsoft Edge";v="103", "Chromium";v="103"',
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": '"Windows"',
-          "sec-fetch-dest": "empty",
-          "sec-fetch-mode": "cors",
-          "sec-fetch-site": "same-origin",
-          "x-csrf-token": xsrfToken
-        },
-        referrer: brightspaceApi.referrer(),
-        referrerPolicy: "strict-origin-when-cross-origin",
-        body: "scope=*%3A*%3A*",
-        method: "POST",
-        mode: "cors",
-        credentials: "include"
-      });
-      const data = await response.json();
-      return data.access_token;
-    }
-    async function getRubricCriteria(organizationId, rubricId, jwt) {
-      const response = await fetch(brightspaceApi.rubricsCriteria(organizationId, rubricId), {
-        headers: { authorization: `Bearer ${jwt}` }
-      });
-      const data = await response.json();
-      const links = data.entities.map((entity) => entity.links[0].href);
-      const criteriaGroups = await Promise.all(
-        links.map(
-          (url) => fetch(url, { headers: { authorization: `Bearer ${jwt}` } }).then((response2) => response2.json())
-        )
-      );
-      return criteriaGroups.map(
-        (criteriaGroup) => criteriaGroup.entities.map((criteria) => {
-          const name = criteria.properties.name;
-          const max = criteria.properties.outOf;
-          const criteriaLink = criteria.links[0].href.split("/");
-          const criteriaId = criteriaLink[criteriaLink.length - 1];
-          return { name, max, criteriaId };
-        })
-      ).flat(2);
-    }
-    async function getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt) {
-      const url = brightspaceApi.rubricsScore();
-      const params = {
-        ou: orgId,
-        evalObjectId,
-        userId: studentId,
-        rubricId,
-        evalObjectType: "1",
-        groupId: "0",
-        d2l_body_type: "5",
-        closeButton: "1",
-        showRubricHeadings: "0"
-      };
-      Object.entries(params).forEach(([name, value]) => url.searchParams.append(name, value));
-      const response = await fetch(url);
-      const studentRubricsHtml = await response.text();
-      const matches = studentRubricsHtml.match(/assessment-href="(.*?)"/);
-      if (!matches)
-        throw new Error("No matches");
-      const studentRubricCriteriaUrl = matches[1];
-      const studentRubricCriteriaResponse = await fetch(studentRubricCriteriaUrl, {
-        headers: { authorization: `Bearer ${jwt}` }
-      });
-      const studentRubricCriteriaData = await studentRubricCriteriaResponse.json();
-      const studentRubricCriteriaAssessmentLinks = studentRubricCriteriaData.entities.filter((entity) => entity.class[0] === "criterion-assessment-links").map((entity) => entity.links[2].href);
-      const criteriaResults = await Promise.all(
-        studentRubricCriteriaAssessmentLinks.map(async (link) => {
-          const response2 = await fetch(link, { headers: { authorization: `Bearer ${jwt}` } });
-          return response2.json();
-        })
-      );
-      return criteriaResults.map((criteriaResult) => {
-        const criteriaLink = criteriaResult.links[0].href.split("/");
-        const criteriaId = criteriaLink[criteriaLink.length - 1];
-        return {
-          id: +criteriaId,
-          score: +criteriaResult.properties.score
-        };
-      });
-    }
-    function getAssessmentList(organizationId) {
-      return getAccessToken(organizationId).then(
-        (jwt) => fetch(brightspaceApi.assessmentList(organizationId), {
-          headers: { authorization: `Bearer ${jwt}` }
-        })
-      ).then((response) => response.json());
-    }
-    return {
-      getAssessmentList,
-      getClassList,
-      getSectionList,
-      getAccessToken,
-      getRubricCriteria,
-      getStudentRubricScore
-    };
-  }
-
   // node_modules/@faker-js/faker/dist/esm/chunk-TN4M2PHH.mjs
   var i = [{ name: "Aegean Airlines", iataCode: "A3" }, { name: "Aeroflot", iataCode: "SU" }, { name: "Aerolineas Argentinas", iataCode: "AR" }, { name: "Aeromexico", iataCode: "AM" }, { name: "Air Algerie", iataCode: "AH" }, { name: "Air Arabia", iataCode: "G9" }, { name: "Air Canada", iataCode: "AC" }, { name: "Air China", iataCode: "CA" }, { name: "Air Europa", iataCode: "UX" }, { name: "Air France-KLM", iataCode: "AF" }, { name: "Air India", iataCode: "AI" }, { name: "Air Mauritius", iataCode: "MK" }, { name: "Air New Zealand", iataCode: "NZ" }, { name: "Air Niugini", iataCode: "PX" }, { name: "Air Tahiti", iataCode: "VT" }, { name: "Air Tahiti Nui", iataCode: "TN" }, { name: "Air Transat", iataCode: "TS" }, { name: "AirAsia X", iataCode: "D7" }, { name: "AirAsia", iataCode: "AK" }, { name: "Aircalin", iataCode: "SB" }, { name: "Alaska Airlines", iataCode: "AS" }, { name: "Alitalia", iataCode: "AZ" }, { name: "All Nippon Airways", iataCode: "NH" }, { name: "Allegiant Air", iataCode: "G4" }, { name: "American Airlines", iataCode: "AA" }, { name: "Asiana Airlines", iataCode: "OZ" }, { name: "Avianca", iataCode: "AV" }, { name: "Azul Linhas Aereas Brasileiras", iataCode: "AD" }, { name: "Azur Air", iataCode: "ZF" }, { name: "Beijing Capital Airlines", iataCode: "JD" }, { name: "Boliviana de Aviacion", iataCode: "OB" }, { name: "British Airways", iataCode: "BA" }, { name: "Cathay Pacific", iataCode: "CX" }, { name: "Cebu Pacific Air", iataCode: "5J" }, { name: "China Airlines", iataCode: "CI" }, { name: "China Eastern Airlines", iataCode: "MU" }, { name: "China Southern Airlines", iataCode: "CZ" }, { name: "Condor", iataCode: "DE" }, { name: "Copa Airlines", iataCode: "CM" }, { name: "Delta Air Lines", iataCode: "DL" }, { name: "Easyfly", iataCode: "VE" }, { name: "EasyJet", iataCode: "U2" }, { name: "EcoJet", iataCode: "8J" }, { name: "Egyptair", iataCode: "MS" }, { name: "El Al", iataCode: "LY" }, { name: "Emirates Airlines", iataCode: "EK" }, { name: "Ethiopian Airlines", iataCode: "ET" }, { name: "Etihad Airways", iataCode: "EY" }, { name: "EVA Air", iataCode: "BR" }, { name: "Fiji Airways", iataCode: "FJ" }, { name: "Finnair", iataCode: "AY" }, { name: "Flybondi", iataCode: "FO" }, { name: "Flydubai", iataCode: "FZ" }, { name: "FlySafair", iataCode: "FA" }, { name: "Frontier Airlines", iataCode: "F9" }, { name: "Garuda Indonesia", iataCode: "GA" }, { name: "Go First", iataCode: "G8" }, { name: "Gol Linhas Aereas Inteligentes", iataCode: "G3" }, { name: "Hainan Airlines", iataCode: "HU" }, { name: "Hawaiian Airlines", iataCode: "HA" }, { name: "IndiGo Airlines", iataCode: "6E" }, { name: "Japan Airlines", iataCode: "JL" }, { name: "Jeju Air", iataCode: "7C" }, { name: "Jet2", iataCode: "LS" }, { name: "JetBlue Airways", iataCode: "B6" }, { name: "JetSMART", iataCode: "JA" }, { name: "Juneyao Airlines", iataCode: "HO" }, { name: "Kenya Airways", iataCode: "KQ" }, { name: "Korean Air", iataCode: "KE" }, { name: "Kulula.com", iataCode: "MN" }, { name: "LATAM Airlines", iataCode: "LA" }, { name: "Lion Air", iataCode: "JT" }, { name: "LOT Polish Airlines", iataCode: "LO" }, { name: "Lufthansa", iataCode: "LH" }, { name: "Libyan Airlines", iataCode: "LN" }, { name: "Linea Aerea Amaszonas", iataCode: "Z8" }, { name: "Malaysia Airlines", iataCode: "MH" }, { name: "Nordwind Airlines", iataCode: "N4" }, { name: "Norwegian Air Shuttle", iataCode: "DY" }, { name: "Oman Air", iataCode: "WY" }, { name: "Pakistan International Airlines", iataCode: "PK" }, { name: "Pegasus Airlines", iataCode: "PC" }, { name: "Philippine Airlines", iataCode: "PR" }, { name: "Qantas Group", iataCode: "QF" }, { name: "Qatar Airways", iataCode: "QR" }, { name: "Republic Airways", iataCode: "YX" }, { name: "Royal Air Maroc", iataCode: "AT" }, { name: "Ryanair", iataCode: "FR" }, { name: "S7 Airlines", iataCode: "S7" }, { name: "SAS", iataCode: "SK" }, { name: "Satena", iataCode: "9R" }, { name: "Saudia", iataCode: "SV" }, { name: "Shandong Airlines", iataCode: "SC" }, { name: "Sichuan Airlines", iataCode: "3U" }, { name: "Singapore Airlines", iataCode: "SQ" }, { name: "Sky Airline", iataCode: "H2" }, { name: "SkyWest Airlines", iataCode: "OO" }, { name: "South African Airways", iataCode: "SA" }, { name: "Southwest Airlines", iataCode: "WN" }, { name: "SpiceJet", iataCode: "SG" }, { name: "Spirit Airlines", iataCode: "NK" }, { name: "Spring Airlines", iataCode: "9S" }, { name: "SriLankan Airlines", iataCode: "UL" }, { name: "Star Peru", iataCode: "2I" }, { name: "Sun Country Airlines", iataCode: "SY" }, { name: "SunExpress", iataCode: "XQ" }, { name: "TAP Air Portugal", iataCode: "TP" }, { name: "Thai AirAsia", iataCode: "FD" }, { name: "Thai Airways", iataCode: "TG" }, { name: "TUI Airways", iataCode: "BY" }, { name: "Tunisair", iataCode: "TU" }, { name: "Turkish Airlines", iataCode: "TK" }, { name: "Ukraine International", iataCode: "PS" }, { name: "United Airlines", iataCode: "UA" }, { name: "Ural Airlines", iataCode: "U6" }, { name: "VietJet Air", iataCode: "VJ" }, { name: "Vietnam Airlines", iataCode: "VN" }, { name: "Virgin Atlantic Airways", iataCode: "VS" }, { name: "Virgin Australia", iataCode: "VA" }, { name: "VivaAerobus", iataCode: "VB" }, { name: "VOEPASS Linhas Aereas", iataCode: "2Z" }, { name: "Volaris", iataCode: "Y4" }, { name: "WestJet", iataCode: "WS" }, { name: "Wingo", iataCode: "P5" }, { name: "Wizz Air", iataCode: "W6" }];
   var r = [{ name: "Aerospatiale/BAC Concorde", iataTypeCode: "SSC" }, { name: "Airbus A300", iataTypeCode: "AB3" }, { name: "Airbus A310", iataTypeCode: "310" }, { name: "Airbus A310-200", iataTypeCode: "312" }, { name: "Airbus A310-300", iataTypeCode: "313" }, { name: "Airbus A318", iataTypeCode: "318" }, { name: "Airbus A319", iataTypeCode: "319" }, { name: "Airbus A319neo", iataTypeCode: "31N" }, { name: "Airbus A320", iataTypeCode: "320" }, { name: "Airbus A320neo", iataTypeCode: "32N" }, { name: "Airbus A321", iataTypeCode: "321" }, { name: "Airbus A321neo", iataTypeCode: "32Q" }, { name: "Airbus A330", iataTypeCode: "330" }, { name: "Airbus A330-200", iataTypeCode: "332" }, { name: "Airbus A330-300", iataTypeCode: "333" }, { name: "Airbus A330-800neo", iataTypeCode: "338" }, { name: "Airbus A330-900neo", iataTypeCode: "339" }, { name: "Airbus A340", iataTypeCode: "340" }, { name: "Airbus A340-200", iataTypeCode: "342" }, { name: "Airbus A340-300", iataTypeCode: "343" }, { name: "Airbus A340-500", iataTypeCode: "345" }, { name: "Airbus A340-600", iataTypeCode: "346" }, { name: "Airbus A350", iataTypeCode: "350" }, { name: "Airbus A350-900", iataTypeCode: "359" }, { name: "Airbus A350-1000", iataTypeCode: "351" }, { name: "Airbus A380", iataTypeCode: "380" }, { name: "Airbus A380-800", iataTypeCode: "388" }, { name: "Antonov An-12", iataTypeCode: "ANF" }, { name: "Antonov An-24", iataTypeCode: "AN4" }, { name: "Antonov An-26", iataTypeCode: "A26" }, { name: "Antonov An-28", iataTypeCode: "A28" }, { name: "Antonov An-30", iataTypeCode: "A30" }, { name: "Antonov An-32", iataTypeCode: "A32" }, { name: "Antonov An-72", iataTypeCode: "AN7" }, { name: "Antonov An-124 Ruslan", iataTypeCode: "A4F" }, { name: "Antonov An-140", iataTypeCode: "A40" }, { name: "Antonov An-148", iataTypeCode: "A81" }, { name: "Antonov An-158", iataTypeCode: "A58" }, { name: "Antonov An-225 Mriya", iataTypeCode: "A5F" }, { name: "Boeing 707", iataTypeCode: "703" }, { name: "Boeing 717", iataTypeCode: "717" }, { name: "Boeing 720B", iataTypeCode: "B72" }, { name: "Boeing 727", iataTypeCode: "727" }, { name: "Boeing 727-100", iataTypeCode: "721" }, { name: "Boeing 727-200", iataTypeCode: "722" }, { name: "Boeing 737 MAX 7", iataTypeCode: "7M7" }, { name: "Boeing 737 MAX 8", iataTypeCode: "7M8" }, { name: "Boeing 737 MAX 9", iataTypeCode: "7M9" }, { name: "Boeing 737 MAX 10", iataTypeCode: "7MJ" }, { name: "Boeing 737", iataTypeCode: "737" }, { name: "Boeing 737-100", iataTypeCode: "731" }, { name: "Boeing 737-200", iataTypeCode: "732" }, { name: "Boeing 737-300", iataTypeCode: "733" }, { name: "Boeing 737-400", iataTypeCode: "734" }, { name: "Boeing 737-500", iataTypeCode: "735" }, { name: "Boeing 737-600", iataTypeCode: "736" }, { name: "Boeing 737-700", iataTypeCode: "73G" }, { name: "Boeing 737-800", iataTypeCode: "738" }, { name: "Boeing 737-900", iataTypeCode: "739" }, { name: "Boeing 747", iataTypeCode: "747" }, { name: "Boeing 747-100", iataTypeCode: "741" }, { name: "Boeing 747-200", iataTypeCode: "742" }, { name: "Boeing 747-300", iataTypeCode: "743" }, { name: "Boeing 747-400", iataTypeCode: "744" }, { name: "Boeing 747-400D", iataTypeCode: "74J" }, { name: "Boeing 747-8", iataTypeCode: "748" }, { name: "Boeing 747SP", iataTypeCode: "74L" }, { name: "Boeing 747SR", iataTypeCode: "74R" }, { name: "Boeing 757", iataTypeCode: "757" }, { name: "Boeing 757-200", iataTypeCode: "752" }, { name: "Boeing 757-300", iataTypeCode: "753" }, { name: "Boeing 767", iataTypeCode: "767" }, { name: "Boeing 767-200", iataTypeCode: "762" }, { name: "Boeing 767-300", iataTypeCode: "763" }, { name: "Boeing 767-400", iataTypeCode: "764" }, { name: "Boeing 777", iataTypeCode: "777" }, { name: "Boeing 777-200", iataTypeCode: "772" }, { name: "Boeing 777-200LR", iataTypeCode: "77L" }, { name: "Boeing 777-300", iataTypeCode: "773" }, { name: "Boeing 777-300ER", iataTypeCode: "77W" }, { name: "Boeing 787", iataTypeCode: "787" }, { name: "Boeing 787-8", iataTypeCode: "788" }, { name: "Boeing 787-9", iataTypeCode: "789" }, { name: "Boeing 787-10", iataTypeCode: "781" }, { name: "Canadair Challenger", iataTypeCode: "CCJ" }, { name: "Canadair CL-44", iataTypeCode: "CL4" }, { name: "Canadair Regional Jet 100", iataTypeCode: "CR1" }, { name: "Canadair Regional Jet 200", iataTypeCode: "CR2" }, { name: "Canadair Regional Jet 700", iataTypeCode: "CR7" }, { name: "Canadair Regional Jet 705", iataTypeCode: "CRA" }, { name: "Canadair Regional Jet 900", iataTypeCode: "CR9" }, { name: "Canadair Regional Jet 1000", iataTypeCode: "CRK" }, { name: "De Havilland Canada DHC-2 Beaver", iataTypeCode: "DHP" }, { name: "De Havilland Canada DHC-2 Turbo-Beaver", iataTypeCode: "DHR" }, { name: "De Havilland Canada DHC-3 Otter", iataTypeCode: "DHL" }, { name: "De Havilland Canada DHC-4 Caribou", iataTypeCode: "DHC" }, { name: "De Havilland Canada DHC-6 Twin Otter", iataTypeCode: "DHT" }, { name: "De Havilland Canada DHC-7 Dash 7", iataTypeCode: "DH7" }, { name: "De Havilland Canada DHC-8-100 Dash 8 / 8Q", iataTypeCode: "DH1" }, { name: "De Havilland Canada DHC-8-200 Dash 8 / 8Q", iataTypeCode: "DH2" }, { name: "De Havilland Canada DHC-8-300 Dash 8 / 8Q", iataTypeCode: "DH3" }, { name: "De Havilland Canada DHC-8-400 Dash 8Q", iataTypeCode: "DH4" }, { name: "De Havilland DH.104 Dove", iataTypeCode: "DHD" }, { name: "De Havilland DH.114 Heron", iataTypeCode: "DHH" }, { name: "Douglas DC-3", iataTypeCode: "D3F" }, { name: "Douglas DC-6", iataTypeCode: "D6F" }, { name: "Douglas DC-8-50", iataTypeCode: "D8T" }, { name: "Douglas DC-8-62", iataTypeCode: "D8L" }, { name: "Douglas DC-8-72", iataTypeCode: "D8Q" }, { name: "Douglas DC-9-10", iataTypeCode: "D91" }, { name: "Douglas DC-9-20", iataTypeCode: "D92" }, { name: "Douglas DC-9-30", iataTypeCode: "D93" }, { name: "Douglas DC-9-40", iataTypeCode: "D94" }, { name: "Douglas DC-9-50", iataTypeCode: "D95" }, { name: "Douglas DC-10", iataTypeCode: "D10" }, { name: "Douglas DC-10-10", iataTypeCode: "D1X" }, { name: "Douglas DC-10-30", iataTypeCode: "D1Y" }, { name: "Embraer 170", iataTypeCode: "E70" }, { name: "Embraer 175", iataTypeCode: "E75" }, { name: "Embraer 190", iataTypeCode: "E90" }, { name: "Embraer 195", iataTypeCode: "E95" }, { name: "Embraer E190-E2", iataTypeCode: "290" }, { name: "Embraer E195-E2", iataTypeCode: "295" }, { name: "Embraer EMB.110 Bandeirante", iataTypeCode: "EMB" }, { name: "Embraer EMB.120 Brasilia", iataTypeCode: "EM2" }, { name: "Embraer Legacy 600", iataTypeCode: "ER3" }, { name: "Embraer Phenom 100", iataTypeCode: "EP1" }, { name: "Embraer Phenom 300", iataTypeCode: "EP3" }, { name: "Embraer RJ135", iataTypeCode: "ER3" }, { name: "Embraer RJ140", iataTypeCode: "ERD" }, { name: "Embraer RJ145 Amazon", iataTypeCode: "ER4" }, { name: "Ilyushin IL18", iataTypeCode: "IL8" }, { name: "Ilyushin IL62", iataTypeCode: "IL6" }, { name: "Ilyushin IL76", iataTypeCode: "IL7" }, { name: "Ilyushin IL86", iataTypeCode: "ILW" }, { name: "Ilyushin IL96-300", iataTypeCode: "I93" }, { name: "Ilyushin IL114", iataTypeCode: "I14" }, { name: "Lockheed L-182 / 282 / 382 (L-100) Hercules", iataTypeCode: "LOH" }, { name: "Lockheed L-188 Electra", iataTypeCode: "LOE" }, { name: "Lockheed L-1011 Tristar", iataTypeCode: "L10" }, { name: "Lockheed L-1049 Super Constellation", iataTypeCode: "L49" }, { name: "McDonnell Douglas MD11", iataTypeCode: "M11" }, { name: "McDonnell Douglas MD80", iataTypeCode: "M80" }, { name: "McDonnell Douglas MD81", iataTypeCode: "M81" }, { name: "McDonnell Douglas MD82", iataTypeCode: "M82" }, { name: "McDonnell Douglas MD83", iataTypeCode: "M83" }, { name: "McDonnell Douglas MD87", iataTypeCode: "M87" }, { name: "McDonnell Douglas MD88", iataTypeCode: "M88" }, { name: "McDonnell Douglas MD90", iataTypeCode: "M90" }, { name: "Sukhoi Superjet 100-95", iataTypeCode: "SU9" }, { name: "Tupolev Tu-134", iataTypeCode: "TU3" }, { name: "Tupolev Tu-154", iataTypeCode: "TU5" }, { name: "Tupolev Tu-204", iataTypeCode: "T20" }, { name: "Yakovlev Yak-40", iataTypeCode: "YK4" }, { name: "Yakovlev Yak-42", iataTypeCode: "YK2" }];
@@ -5617,6 +5489,38 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
       ]
     }
   }));
+  function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
+    async function getClassList(organizationId) {
+      return fakeClassList;
+    }
+    async function getSectionList(organizationId, jwt) {
+      return fakeSections;
+    }
+    async function getAccessToken(orgId) {
+      return f51.string.alphanumeric(50);
+    }
+    async function getRubricCriteria(organizationId, rubricId, jwt) {
+      return fakeCriteria;
+    }
+    async function getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt) {
+      await new Promise((resolve) => setTimeout(resolve, f51.number.int({ min: 100, max: 5e3 })));
+      return fakeCriteria.map(({ criteriaId }) => ({
+        id: +criteriaId,
+        score: f51.number.int(10)
+      }));
+    }
+    async function getAssessmentList(organizationId) {
+      return fakeAssessmentList;
+    }
+    return {
+      getAssessmentList,
+      getClassList,
+      getSectionList,
+      getAccessToken,
+      getRubricCriteria,
+      getStudentRubricScore
+    };
+  }
 
   // src/data-formatter.js
   function getDateTimeGenerated() {
@@ -6020,14 +5924,14 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
   }
 
   // src/index.js
-  var BrightspaceApi3 = false ? BrightspaceApi2 : BrightspaceApi;
+  var BrightspaceApi3 = true ? BrightspaceApi : BrightspaceApi2;
   function BrightspaceRubricScraper(brightspaceBase, brightspaceApiBase) {
     const brightspaceApi = BrightspaceApi3(brightspaceBase, brightspaceApiBase);
     const scrape = Scraper(brightspaceApi);
     const organizationId = new URL(window.location).searchParams.get("ou");
     const domManipulator = DomManipulator(scrape, organizationId);
     let rubrics = [];
-    if (true) {
+    if (false) {
       rubrics = JSON.parse(localStorage.getItem(`rubrics-${organizationId}`) || JSON.stringify([]));
       rubrics.forEach(
         ({ title, rubricId, evalObjectId }) => domManipulator.addScraper(organizationId, title, rubricId, evalObjectId)

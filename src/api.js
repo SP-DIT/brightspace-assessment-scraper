@@ -71,11 +71,23 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
         const data = await response.json();
         const links = data.entities.map((entity) => entity.links[0].href);
 
-        return Promise.all(
+        const criteriaGroups = await Promise.all(
             links.map((url) =>
                 fetch(url, { headers: { authorization: `Bearer ${jwt}` } }).then((response) => response.json()),
             ),
         );
+
+        return criteriaGroups
+            .map((criteriaGroup) =>
+                criteriaGroup.entities.map((criteria) => {
+                    const name = criteria.properties.name;
+                    const max = criteria.properties.outOf;
+                    const criteriaLink = criteria.links[0].href.split('/');
+                    const criteriaId = criteriaLink[criteriaLink.length - 1];
+                    return { name, max, criteriaId };
+                }),
+            )
+            .flat(2);
     }
 
     async function getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt) {
@@ -113,12 +125,21 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
             .map((entity) => entity.links[2].href); // TODO: Explain magic number
 
         // Get the score for each criteria and its score for this rubric x assessment
-        return await Promise.all(
+        const criteriaResults = await Promise.all(
             studentRubricCriteriaAssessmentLinks.map(async (link) => {
                 const response = await fetch(link, { headers: { authorization: `Bearer ${jwt}` } });
                 return response.json();
             }),
         );
+
+        return criteriaResults.map((criteriaResult) => {
+            const criteriaLink = criteriaResult.links[0].href.split('/');
+            const criteriaId = criteriaLink[criteriaLink.length - 1];
+            return {
+                id: +criteriaId,
+                score: +criteriaResult.properties.score,
+            };
+        });
     }
 
     function getAssessmentList(organizationId) {
