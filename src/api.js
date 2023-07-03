@@ -24,6 +24,12 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
                 `/d2l/lms/grades/admin/importexport/export/options_edit.d2l?ou=${organizationId}`,
                 brightspaceBase,
             ).toString(),
+
+        enrollmentList: () =>
+            new URL(
+                `/d2l/api/lp/1.8/enrollments/myenrollments/?orgUnitTypeId=3&sortBy=-StartDate`,
+                brightspaceBase,
+            ).toString(),
     };
 
     async function getClassList(organizationId) {
@@ -38,7 +44,7 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
         return response.json();
     }
 
-    async function getAccessToken(orgId) {
+    async function getAccessToken() {
         const xsrfToken = localStorage.getItem('XSRF.Token');
         const response = await fetch(brightspaceApi.authToken(), {
             headers: {
@@ -142,14 +148,27 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
         });
     }
 
-    function getAssessmentList(organizationId) {
-        return getAccessToken(organizationId)
-            .then((jwt) =>
-                fetch(brightspaceApi.assessmentList(organizationId), {
-                    headers: { authorization: `Bearer ${jwt}` },
-                }),
-            )
-            .then((response) => response.json());
+    async function getAssessmentList(organizationId) {
+        const jwt = await getAccessToken();
+        const response = await fetch(brightspaceApi.assessmentList(organizationId), {
+            headers: { authorization: `Bearer ${jwt}` },
+        });
+        return await response.json();
+    }
+
+    async function getModuleEnrollmentList() {
+        let hasMoreItem = true;
+        const data = [];
+        const jwt = await getAccessToken();
+        while (hasMoreItem) {
+            const response = await fetch(brightspaceApi.enrollmentList(), {
+                headers: { authorization: `Bearer ${jwt}` },
+            });
+            const json = await response.json();
+            hasMoreItem = json.PagingInfo.HasMoreItems;
+            data.push(...json.Items);
+        }
+        return data;
     }
 
     return {
@@ -159,5 +178,6 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
         getAccessToken,
         getRubricCriteria,
         getStudentRubricScore,
+        getModuleEnrollmentList,
     };
 }

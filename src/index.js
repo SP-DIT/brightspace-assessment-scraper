@@ -3,7 +3,7 @@ import MockBrightspaceApi from './__mocks__/api';
 
 import DomManipulator from './scraper-dom';
 import Scraper from './scrape';
-import { initializeAssessmentSelect } from './add-scraper-dom';
+import { initializeModuleSelect } from './add-scraper-dom';
 
 const BrightspaceApi = process.env.NODE_ENV === 'test' ? MockBrightspaceApi : RealBrightspaceApi;
 
@@ -22,7 +22,7 @@ export default function BrightspaceRubricScraper(brightspaceBase, brightspaceApi
         );
     }
 
-    initializeAssessmentSelect(brightspaceApi, organizationId, ({ title, rubricId, evalObjectId }) => {
+    initializeModuleSelect(brightspaceApi, ({ title, rubricId, evalObjectId }) => {
         rubrics.push({ title, rubricId, evalObjectId });
         localStorage.setItem(`rubrics-${organizationId}`, JSON.stringify(rubrics));
         domManipulator.addScraper(organizationId, title, rubricId, evalObjectId);

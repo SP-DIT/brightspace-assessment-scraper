@@ -23,19 +23,24 @@
     <body>
         <div>
             <h1 id="loading">Loading</h1>
-            <form id="scrape-form" hidden>
-                <p>
-                    Assignment:
-                    <select id="assessment-select">
-                        <option disabled selected>Select...</option>
-                    </select>
-                </p>
-                <p>
-                    Rubrics:
-                    <select id="rubric-select"></select>
-                </p>
-                <p><button type="submit">Add Scraper</button></p>
-            </form>
+            <div id="scrape-form-container">
+                <div id="module-select-datatable-container">
+                    <table id="module-select-datatable"></table>
+                </div>
+                <form id="scrape-form" hidden>
+                    <p>
+                        Assignment:
+                        <select id="assessment-select">
+                            <option disabled selected>Select...</option>
+                        </select>
+                    </p>
+                    <p>
+                        Rubrics:
+                        <select id="rubric-select"></select>
+                    </p>
+                    <p><button id="back-assessment-select">Back</button><button type="submit">Add Scraper</button></p>
+                </form>
+            </div>
             <div class="scraper-template" hidden>
                 <div style="border: black solid 1px; padding: 10px; display: inline-block; max-width: 700px">
                     <h3 style="margin-top: 0px">Title</h3>

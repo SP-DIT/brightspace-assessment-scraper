@@ -5489,6 +5489,14 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
       ]
     }
   }));
+  var fakeSemesterList = Array(5).fill(null).map(() => f51.string.numeric(4));
+  var fakeModuleList = Array(50).fill(null).map(() => ({
+    OrgUnit: {
+      Id: +f51.string.numeric(6),
+      Name: f51.commerce.productName(),
+      Code: `${f51.commerce.productAdjective()}-${fakeSemesterList[f51.number.int(5)]}`
+    }
+  }));
   function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
     async function getClassList(organizationId) {
       return fakeClassList;
@@ -5512,13 +5520,19 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
     async function getAssessmentList(organizationId) {
       return fakeAssessmentList;
     }
+    async function getModuleEnrollmentList() {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => resolve(fakeModuleList), 0);
+      });
+    }
     return {
       getAssessmentList,
       getClassList,
       getSectionList,
       getAccessToken,
       getRubricCriteria,
-      getStudentRubricScore
+      getStudentRubricScore,
+      getModuleEnrollmentList
     };
   }
 
@@ -5881,10 +5895,70 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
   }
 
   // src/add-scraper-dom.js
-  function initializeAssessmentSelect(brightspaceApi, organizationId, onAddScraper) {
+  function showLoading(isShow = true) {
+    document.getElementById("loading").hidden = !isShow;
+    document.getElementById("scrape-form-container").hidden = isShow;
+  }
+  function hideLoading() {
+    showLoading(false);
+  }
+  var pages = {
+    MODULE_SELECT: "MODULE_SELECT",
+    ASSESSMENT_SELECT: "ASSESSMENT_SELECT"
+  };
+  function switchTo(page) {
+    document.getElementById("module-select-datatable-container").hidden = page !== pages.MODULE_SELECT;
+    document.getElementById("scrape-form").hidden = page !== pages.ASSESSMENT_SELECT;
+  }
+  async function initializeModuleSelect(brightspaceApi, onAddScraper) {
+    showLoading();
+    const moduleEnrollmentList = await brightspaceApi.getModuleEnrollmentList().finally(hideLoading);
+    function makeButton(id, name) {
+      const button = document.createElement("button");
+      button.textContent = "Add";
+      button.className = "add-button";
+      button.setAttribute("data-id", id);
+      button.setAttribute("data-name", name);
+      return button.outerHTML;
+    }
+    const rows = moduleEnrollmentList.map(({ OrgUnit: { Id, Name, Code } }) => [
+      Code.split("-").slice(-1)[0],
+      Name,
+      makeButton(Id)
+    ]);
+    const table = new simpleDatatables.DataTable("#module-select-datatable", {
+      data: {
+        headings: ["Semester", "Name", "Add"],
+        data: rows
+      },
+      columns: [{ select: 0, filter: [...new Set(rows.map(([semester]) => semester))] }]
+    });
+    function registerAddButton(table2) {
+      table2.dom.querySelectorAll("button.add-button").forEach((button) => {
+        button.onclick = function() {
+          const organizationId = button.getAttribute("data-id");
+          switchTo(pages.ASSESSMENT_SELECT);
+          initializeAssessmentSelect(
+            brightspaceApi,
+            organizationId,
+            onAddScraper,
+            () => switchTo(pages.MODULE_SELECT)
+          );
+        };
+      });
+    }
+    table.on("datatable.init", function() {
+      registerAddButton(table);
+    });
+    table.on("datatable.page", function() {
+      registerAddButton(table);
+    });
+  }
+  function initializeAssessmentSelect(brightspaceApi, organizationId, onAddScraper, onBack) {
     const assessmentSelect = document.getElementById("assessment-select");
     const rubricSelect = document.getElementById("rubric-select");
     const addScraperForm = document.getElementById("scrape-form");
+    const backButton = document.getElementById("back-assessment-select");
     const assessmentRubricsMap = {};
     assessmentSelect.onchange = function() {
       rubricSelect.innerHTML = "";
@@ -5897,7 +5971,16 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
         rubricSelect.appendChild(optionEle);
       });
     };
-    brightspaceApi.getAssessmentList(organizationId).then((assessments) => {
+    addScraperForm.onsubmit = function(event) {
+      event.preventDefault();
+      const title = assessmentSelect.options[assessmentSelect.selectedIndex].text;
+      const evalObjectId = assessmentSelect.value;
+      const rubricId = rubricSelect.value;
+      onAddScraper({ title, rubricId, evalObjectId });
+    };
+    backButton.onClick = onBack;
+    showLoading();
+    return brightspaceApi.getAssessmentList(organizationId).then((assessments) => {
       assessments.forEach((assessment) => {
         const {
           Id: id,
@@ -5910,17 +5993,7 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
         assessmentRubricsMap[id] = rubrics;
         assessmentSelect.appendChild(optionEle);
       });
-    }).finally(() => {
-      document.getElementById("loading").hidden = true;
-      document.getElementById("scrape-form").hidden = false;
-    });
-    addScraperForm.onsubmit = function(event) {
-      event.preventDefault();
-      const title = assessmentSelect.options[assessmentSelect.selectedIndex].text;
-      const evalObjectId = assessmentSelect.value;
-      const rubricId = rubricSelect.value;
-      onAddScraper({ title, rubricId, evalObjectId });
-    };
+    }).finally(hideLoading);
   }
 
   // src/index.js
@@ -5937,7 +6010,7 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
         ({ title, rubricId, evalObjectId }) => domManipulator.addScraper(organizationId, title, rubricId, evalObjectId)
       );
     }
-    initializeAssessmentSelect(brightspaceApi, organizationId, ({ title, rubricId, evalObjectId }) => {
+    initializeModuleSelect(brightspaceApi, ({ title, rubricId, evalObjectId }) => {
       rubrics.push({ title, rubricId, evalObjectId });
       localStorage.setItem(`rubrics-${organizationId}`, JSON.stringify(rubrics));
       domManipulator.addScraper(organizationId, title, rubricId, evalObjectId);

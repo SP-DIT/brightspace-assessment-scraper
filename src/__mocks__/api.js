@@ -38,6 +38,19 @@ const fakeAssessmentList = Array(3)
         },
     }));
 
+const fakeSemesterList = Array(5)
+    .fill(null)
+    .map(() => faker.string.numeric(4));
+const fakeModuleList = Array(50)
+    .fill(null)
+    .map(() => ({
+        OrgUnit: {
+            Id: +faker.string.numeric(6),
+            Name: faker.commerce.productName(),
+            Code: `${faker.commerce.productAdjective()}-${fakeSemesterList[faker.number.int(5)]}`,
+        },
+    }));
+
 export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
     async function getClassList(organizationId) {
         return fakeClassList;
@@ -67,6 +80,12 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
         return fakeAssessmentList;
     }
 
+    async function getModuleEnrollmentList() {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => resolve(fakeModuleList), 0);
+        });
+    }
+
     return {
         getAssessmentList,
         getClassList,
@@ -74,5 +93,6 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
         getAccessToken,
         getRubricCriteria,
         getStudentRubricScore,
+        getModuleEnrollmentList,
     };
 }
