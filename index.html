@@ -25,9 +25,11 @@
             <h1 id="loading">Loading</h1>
             <div id="scrape-form-container">
                 <div id="module-select-datatable-container">
+                    <h1>Select Module</h1>
                     <table id="module-select-datatable"></table>
                 </div>
                 <form id="scrape-form" hidden>
+                    <h1>[<span id="selected-module-name"></span>] Select Assessment</h1>
                     <p>
                         Assignment:
                         <select id="assessment-select">
@@ -51,10 +53,7 @@
                     <div class="loading">Progress: <span class="processed">-</span>/<span class="total">-</span></div>
 
                     <div class="results">
-                        <div class="controls">
-                            <button class="download-checker-verifier" disabled>Download for Checking/Verifying</button>
-                            <button class="download-SAS" disabled>Download for SAS upload</button>
-                        </div>
+                        <div class="controls"></div>
                         <div class="table"></div>
                         <div class="charts">
                             <canvas class="grades-distribution"></canvas>

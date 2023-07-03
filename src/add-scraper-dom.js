@@ -32,7 +32,7 @@ export async function initializeModuleSelect(brightspaceApi, onAddScraper) {
     const rows = moduleEnrollmentList.map(({ OrgUnit: { Id, Name, Code } }) => [
         Code.split('-').slice(-1)[0],
         Name,
-        makeButton(Id),
+        makeButton(Id, Name),
     ]);
 
     // Create table
@@ -49,9 +49,15 @@ export async function initializeModuleSelect(brightspaceApi, onAddScraper) {
         table.dom.querySelectorAll('button.add-button').forEach((button) => {
             button.onclick = function () {
                 const organizationId = button.getAttribute('data-id');
+                const moduleName = button.getAttribute('data-name');
+                document.getElementById('selected-module-name').textContent = moduleName;
                 switchTo(pages.ASSESSMENT_SELECT);
-                initializeAssessmentSelect(brightspaceApi, organizationId, onAddScraper, () =>
-                    switchTo(pages.MODULE_SELECT),
+                initializeAssessmentSelect(
+                    brightspaceApi,
+                    organizationId,
+                    ({ title, rubricId, evalObjectId }) =>
+                        onAddScraper({ title: `[${moduleName}] ${title}`, rubricId, evalObjectId }),
+                    () => switchTo(pages.MODULE_SELECT),
                 );
             };
         });
@@ -60,6 +66,9 @@ export async function initializeModuleSelect(brightspaceApi, onAddScraper) {
         registerAddButton(table);
     });
     table.on('datatable.page', function () {
+        registerAddButton(table);
+    });
+    table.on('datatable.update', function () {
         registerAddButton(table);
     });
 }

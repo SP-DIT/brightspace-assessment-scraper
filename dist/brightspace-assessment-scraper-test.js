@@ -5924,7 +5924,7 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
     const rows = moduleEnrollmentList.map(({ OrgUnit: { Id, Name, Code } }) => [
       Code.split("-").slice(-1)[0],
       Name,
-      makeButton(Id)
+      makeButton(Id, Name)
     ]);
     const table = new simpleDatatables.DataTable("#module-select-datatable", {
       data: {
@@ -5937,11 +5937,13 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
       table2.dom.querySelectorAll("button.add-button").forEach((button) => {
         button.onclick = function() {
           const organizationId = button.getAttribute("data-id");
+          const moduleName = button.getAttribute("data-name");
+          document.getElementById("selected-module-name").textContent = moduleName;
           switchTo(pages.ASSESSMENT_SELECT);
           initializeAssessmentSelect(
             brightspaceApi,
             organizationId,
-            onAddScraper,
+            ({ title, rubricId, evalObjectId }) => onAddScraper({ title: `[${moduleName}] ${title}`, rubricId, evalObjectId }),
             () => switchTo(pages.MODULE_SELECT)
           );
         };
@@ -5951,6 +5953,9 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
       registerAddButton(table);
     });
     table.on("datatable.page", function() {
+      registerAddButton(table);
+    });
+    table.on("datatable.update", function() {
       registerAddButton(table);
     });
   }
