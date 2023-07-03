@@ -56,7 +56,12 @@ export async function initializeModuleSelect(brightspaceApi, onAddScraper) {
                     brightspaceApi,
                     organizationId,
                     ({ title, rubricId, evalObjectId }) =>
-                        onAddScraper({ title: `[${moduleName}] ${title}`, rubricId, evalObjectId }),
+                        onAddScraper({
+                            title: `[${moduleName}] ${title}`,
+                            rubricId,
+                            evalObjectId,
+                            orgId: organizationId,
+                        }),
                     () => switchTo(pages.MODULE_SELECT),
                 );
             };

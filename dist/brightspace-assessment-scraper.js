@@ -5893,14 +5893,14 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
     };
     return containerNode;
   }
-  function DomManipulator(scrape, orgId) {
-    function addScraper(orgId2, title, rubricId, evalObjectId) {
+  function DomManipulator(scrape) {
+    function addScraper(orgId, title, rubricId, evalObjectId) {
       const containerNode = createContainer(
         title,
-        orgId2,
+        orgId,
         (container) => scrape({
           title,
-          orgId: orgId2,
+          orgId,
           rubricId,
           evalObjectId,
           container
@@ -6052,7 +6052,12 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
           initializeAssessmentSelect(
             brightspaceApi,
             organizationId,
-            ({ title, rubricId, evalObjectId }) => onAddScraper({ title: `[${moduleName}] ${title}`, rubricId, evalObjectId }),
+            ({ title, rubricId, evalObjectId }) => onAddScraper({
+              title: `[${moduleName}] ${title}`,
+              rubricId,
+              evalObjectId,
+              orgId: organizationId
+            }),
             () => switchTo(pages.MODULE_SELECT)
           );
         };
@@ -6116,18 +6121,19 @@ Try adjusting maxTime or maxRetries parameters for faker.helpers.unique().`);
     const brightspaceApi = BrightspaceApi3(brightspaceBase, brightspaceApiBase);
     const scrape = Scraper(brightspaceApi);
     const organizationId = new URL(window.location).searchParams.get("ou");
-    const domManipulator = DomManipulator(scrape, organizationId);
+    const domManipulator = DomManipulator(scrape);
+    const localStorageKey = `brightspace-rubrics-scraper`;
     let rubrics = [];
     if (true) {
-      rubrics = JSON.parse(localStorage.getItem(`rubrics-${organizationId}`) || JSON.stringify([]));
+      rubrics = JSON.parse(localStorage.getItem(localStorageKey) || JSON.stringify([]));
       rubrics.forEach(
         ({ title, rubricId, evalObjectId }) => domManipulator.addScraper(organizationId, title, rubricId, evalObjectId)
       );
     }
-    initializeModuleSelect(brightspaceApi, ({ title, rubricId, evalObjectId }) => {
-      rubrics.push({ title, rubricId, evalObjectId });
-      localStorage.setItem(`rubrics-${organizationId}`, JSON.stringify(rubrics));
-      domManipulator.addScraper(organizationId, title, rubricId, evalObjectId);
+    initializeModuleSelect(brightspaceApi, ({ orgId, title, rubricId, evalObjectId }) => {
+      rubrics.push({ title, rubricId, evalObjectId, orgId });
+      localStorage.setItem(localStorageKey, JSON.stringify(rubrics));
+      domManipulator.addScraper(orgId, title, rubricId, evalObjectId);
     });
   }
   return __toCommonJS(src_exports);

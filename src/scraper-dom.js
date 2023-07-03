@@ -152,7 +152,7 @@ function createContainer(title, orgId, onScrape, resultButtonsDefinitions) {
     return containerNode;
 }
 
-export default function DomManipulator(scrape, orgId) {
+export default function DomManipulator(scrape) {
     function addScraper(orgId, title, rubricId, evalObjectId) {
         const containerNode = createContainer(
             title,
