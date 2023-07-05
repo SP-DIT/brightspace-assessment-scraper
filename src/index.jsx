@@ -27,11 +27,11 @@ export default function BrightspaceRubricScraper(brightspaceBase, brightspaceApi
         );
     }
 
-    initializeModuleSelect(brightspaceApi, ({ orgId, title, rubricId, evalObjectId }) => {
-        rubrics.push({ title, rubricId, evalObjectId, orgId });
-        localStorage.setItem(localStorageKey, JSON.stringify(rubrics));
-        domManipulator.addScraper(orgId, title, rubricId, evalObjectId);
-    });
+    // initializeModuleSelect(brightspaceApi, ({ orgId, title, rubricId, evalObjectId }) => {
+    //     rubrics.push({ title, rubricId, evalObjectId, orgId });
+    //     localStorage.setItem(localStorageKey, JSON.stringify(rubrics));
+    //     domManipulator.addScraper(orgId, title, rubricId, evalObjectId);
+    // });
 
     ReactDOM.createRoot(document.getElementById('root')).render(
         <ScraperApp brightspaceBase={brightspaceBase} brightspaceApiBase={brightspaceApiBase} />,

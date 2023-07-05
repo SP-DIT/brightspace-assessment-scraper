@@ -2,7 +2,7 @@
 import { useContext, useEffect, useState } from 'react';
 import ScraperContext from './ScraperContext';
 
-export default function AssignmentPicker({ id: orgUnitId }) {
+export default function AssignmentPicker({ orgUnit: { Id: orgUnitId, Name: moduleName } }) {
     const { brightspaceApi, addScraper } = useContext(ScraperContext);
     const [assignmentList, setAssignmentList] = useState();
     const [selectedAssignment, setSelectedAssignment] = useState();
@@ -63,13 +63,21 @@ export default function AssignmentPicker({ id: orgUnitId }) {
                         <button
                             type="button"
                             disabled={Number.isNaN(+selectedAssignment) || Number.isNaN(+selectedRubric)}
-                            onClick={() =>
-                                addScraper(
-                                    orgUnitId,
-                                    assignmentList[selectedAssignment].Id,
-                                    assignmentList[selectedAssignment].Assessment.Rubrics[selectedRubric].RubricId,
-                                )
-                            }
+                            onClick={() => {
+                                const assignment = assignmentList[selectedAssignment];
+                                const rubric = assignment.Assessment.Rubrics[selectedRubric];
+                                addScraper({
+                                    orgUnit: { id: orgUnitId, name: moduleName },
+                                    assignment: {
+                                        id: assignment.Id,
+                                        name: assignment.Name,
+                                    },
+                                    rubric: {
+                                        id: rubric.RubricId,
+                                        name: rubric.Name,
+                                    },
+                                });
+                            }}
                         >
                             Add Scraper
                         </button>

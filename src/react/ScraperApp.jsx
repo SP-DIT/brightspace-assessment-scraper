@@ -1,19 +1,17 @@
 import { useCallback, useMemo, useState } from 'react';
+import { ChakraProvider } from '@chakra-ui/react';
 import RealBrightspaceApi from '../api';
 import MockBrightspaceApi from '../__mocks__/api';
 import Scraper from '../scrape';
-import ModulePicker from './ModulePicker';
 import ScraperContext from './ScraperContext';
 import ScraperContainer from './ScraperContainer';
+import AddScraper from './AddScraper';
 
 const BrightspaceApi = process.env.NODE_ENV === 'test' ? MockBrightspaceApi : RealBrightspaceApi;
 
 export default function ScraperApp({ brightspaceBase, brightspaceApiBase }) {
     const [scrapers, setScrapers] = useState([]);
-    const addScraper = useCallback(
-        (orgUnitId, assignmentId, rubricId) => setScrapers([...scrapers, { orgUnitId, assignmentId, rubricId }]),
-        [scrapers],
-    );
+    const addScraper = useCallback((scraper) => setScrapers([...scrapers, scraper]), [scrapers]);
     const singletonInstance = useMemo(() => {
         const brightspaceApi = BrightspaceApi(brightspaceBase, brightspaceApiBase);
         const scraper = Scraper(brightspaceApi);
@@ -21,11 +19,11 @@ export default function ScraperApp({ brightspaceBase, brightspaceApiBase }) {
     }, [addScraper]);
 
     return (
-        <ScraperContext.Provider value={singletonInstance}>
-            <ModulePicker />
-            {scrapers.map((scraper) => (
-                <ScraperContainer scraper={scraper} />
-            ))}
-        </ScraperContext.Provider>
+        <ChakraProvider>
+            <ScraperContext.Provider value={singletonInstance}>
+                <AddScraper />
+                <ScraperContainer scrapers={scrapers} />
+            </ScraperContext.Provider>
+        </ChakraProvider>
     );
 }

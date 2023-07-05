@@ -22,47 +22,7 @@
     </head>
     <body>
         <div id="root"></div>
-        <div>
-            <h1 id="loading">Loading</h1>
-            <div id="scrape-form-container">
-                <div id="module-select-datatable-container">
-                    <h1>Select Module</h1>
-                    <table id="module-select-datatable"></table>
-                </div>
-                <form id="scrape-form" hidden>
-                    <h1>[<span id="selected-module-name"></span>] Select Assessment</h1>
-                    <p>
-                        Assignment:
-                        <select id="assessment-select">
-                            <option disabled selected>Select...</option>
-                        </select>
-                    </p>
-                    <p>
-                        Rubrics:
-                        <select id="rubric-select"></select>
-                    </p>
-                    <p><button id="back-assessment-select">Back</button><button type="submit">Add Scraper</button></p>
-                </form>
-            </div>
-            <div class="scraper-template" hidden>
-                <div style="border: black solid 1px; padding: 10px; display: inline-block; max-width: 700px">
-                    <h3 style="margin-top: 0px">Title</h3>
-                    <p></p>
-                    <button class="scrape"></button>
-                    <button class="reset" hidden>Reset</button>
-                    <ol class="progress"></ol>
-                    <div class="loading">Progress: <span class="processed">-</span>/<span class="total">-</span></div>
 
-                    <div class="results">
-                        <div class="controls"></div>
-                        <div class="table"></div>
-                        <div class="charts">
-                            <canvas class="grades-distribution"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <p>
             <script>
                 const targetPlatforms = {

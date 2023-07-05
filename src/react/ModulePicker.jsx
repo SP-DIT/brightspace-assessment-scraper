@@ -1,13 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import DataTable from 'react-data-table-component';
 import ScraperContext from './ScraperContext';
-import AssignmentPicker from './AssignmentPicker';
+import FilteredDataTable from './FilteredDataTable';
 
-function ExpandedComponent({ data }) {
-    return <AssignmentPicker id={data.OrgUnit.Id} />;
-}
-
-export default function ModulePicker() {
+export default function ModulePicker({ ExpandedComponent }) {
     const { brightspaceApi } = useContext(ScraperContext);
     const [enrollments, setEnrollments] = useState();
 
@@ -21,9 +16,10 @@ export default function ModulePicker() {
             skip = true;
         };
     }, []);
+
     return (
         <div>
-            <DataTable
+            <FilteredDataTable
                 columns={[
                     {
                         name: 'Semester',
