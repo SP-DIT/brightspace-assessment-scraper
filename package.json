@@ -1,12 +1,23 @@
 {
     "dependencies": {
-        "esbuild": "^0.18.10"
+        "esbuild": "^0.18.10",
+        "react": "^18.2.0",
+        "react-data-table-component": "^7.5.3",
+        "react-dom": "^18.2.0",
+        "styled-components": "^6.0.2"
     },
     "scripts": {
         "start": "npm run build -- --watch --define:process.env.NODE_ENV=\\\"test\\\"  --outfile=dist/brightspace-assessment-scraper-test.js",
-        "build": "esbuild ./src/index.js --bundle --global-name=BrightspaceAssessmentScraper --outfile=dist/brightspace-assessment-scraper.js"
+        "build": "esbuild ./src/index.jsx --bundle --global-name=BrightspaceAssessmentScraper --outfile=dist/brightspace-assessment-scraper.js --jsx=automatic"
     },
     "devDependencies": {
-        "@faker-js/faker": "^8.0.2"
+        "@faker-js/faker": "^8.0.2",
+        "eslint": "^8.44.0",
+        "eslint-config-airbnb": "^19.0.4",
+        "eslint-config-prettier": "^8.8.0",
+        "eslint-plugin-import": "^2.27.5",
+        "eslint-plugin-jsx-a11y": "^6.7.1",
+        "eslint-plugin-react": "^7.32.2",
+        "eslint-plugin-react-hooks": "^4.6.0"
     }
 }

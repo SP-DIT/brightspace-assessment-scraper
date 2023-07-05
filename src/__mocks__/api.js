@@ -47,7 +47,7 @@ const fakeModuleList = Array(50)
         OrgUnit: {
             Id: +faker.string.numeric(6),
             Name: faker.commerce.productName(),
-            Code: `${faker.commerce.productAdjective()}-${fakeSemesterList[faker.number.int(5)]}`,
+            Code: `${faker.commerce.productAdjective()}-${fakeSemesterList[faker.number.int(4)]}`,
         },
     }));
 

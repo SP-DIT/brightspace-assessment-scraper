@@ -27,13 +27,11 @@ export default function Scraper(brightspaceApi) {
     }
 
     function scrapeStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt) {
-        return brightspaceApi
-            .getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt)
-            .then((scores) => {
-                const total = scores.reduce((total, { score }) => total + score, 0);
-                scores.push({ id: 'total', score: total });
-                return scores;
-            });
+        return brightspaceApi.getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt).then((scores) => {
+            const total = scores.reduce((total, { score }) => total + score, 0);
+            scores.push({ id: 'total', score: total });
+            return scores;
+        });
     }
 
     async function scrapeStudent(students, jwt, config) {
@@ -62,7 +60,7 @@ export default function Scraper(brightspaceApi) {
         return result;
     }
 
-    return async function scrape(config) {
+    async function scrape(config) {
         const { orgId, rubricId, container } = config;
         try {
             container.addProgressText('Getting Access Token...');
@@ -82,5 +80,10 @@ export default function Scraper(brightspaceApi) {
         } catch (error) {
             container.addProgressText(error.message);
         }
+    }
+
+    return {
+        brightspaceApi,
+        scrape,
     };
 }
