@@ -1,11 +1,12 @@
+import { Box } from '@chakra-ui/react';
 import SingleScraper from './SingleScraper';
 
 export default function ScraperContainer({ scrapers }) {
     return (
-        <div>
+        <Box>
             {scrapers.map((scraper) => (
                 <SingleScraper scraper={scraper} />
             ))}
-        </div>
+        </Box>
     );
 }

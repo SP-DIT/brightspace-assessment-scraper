@@ -9,7 +9,7 @@ function ExpandedComponent({ data }) {
 export default function AddScraper() {
     return (
         <Box>
-            <Card width="50%">
+            <Card>
                 <CardBody>
                     <ModulePicker ExpandedComponent={ExpandedComponent} />
                 </CardBody>

@@ -1,15 +1,15 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import { HStack, IconButton, Input } from '@chakra-ui/react';
+import { IoMdCloseCircle } from 'react-icons/io';
 import { useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 
 function FilterComponent({ onFilter, onClear, filterText }) {
     return (
-        <div>
-            <input placeholder="Enter filter" onChange={onFilter} value={filterText} />
-            <button type="button" onClick={onClear}>
-                X
-            </button>
-        </div>
+        <HStack spacing={3}>
+            <Input placeholder="Enter filter" onChange={onFilter} value={filterText} />
+            <IconButton icon={<IoMdCloseCircle />} type="button" bgColor="salmon" color="white" onClick={onClear} />
+        </HStack>
     );
 }
 

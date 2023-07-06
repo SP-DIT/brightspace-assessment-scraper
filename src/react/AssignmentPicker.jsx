@@ -1,5 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { useContext, useEffect, useState } from 'react';
+import { Button, Select, Stack } from '@chakra-ui/react';
+import { MdOutlineAddCircle } from 'react-icons/md';
 import ScraperContext from './ScraperContext';
 
 export default function AssignmentPicker({ orgUnit: { Id: orgUnitId, Name: moduleName } }) {
@@ -19,73 +21,72 @@ export default function AssignmentPicker({ orgUnit: { Id: orgUnitId, Name: modul
         };
     }, [orgUnitId]);
 
+    const onAddAssignment = () => {
+        const assignment = assignmentList[selectedAssignment];
+        const rubric = assignment.Assessment.Rubrics[selectedRubric];
+        addScraper({
+            orgUnit: { id: orgUnitId, name: moduleName },
+            assignment: {
+                id: assignment.Id,
+                name: assignment.Name,
+            },
+            rubric: {
+                id: rubric.RubricId,
+                name: rubric.Name,
+            },
+        });
+    };
+
     return (
-        <div>
+        <Stack spacing={3} padding={5}>
             {assignmentList ? (
                 <>
-                    <p>
-                        <label>
+                    <Select
+                        variant="filled"
+                        size="sm"
+                        defaultValue={-1}
+                        onChange={(e) => {
+                            setSelectedAssignment(e.target.value);
+                            setSelectedRubric(0);
+                        }}
+                    >
+                        <option value={-1} disabled>
                             Assignment
-                            <select
-                                defaultValue={-1}
-                                onChange={(e) => {
-                                    setSelectedAssignment(e.target.value);
-                                    setSelectedRubric(0);
-                                }}
-                            >
-                                <option value={-1} disabled>
-                                    Select Assignment
-                                </option>
-                                {assignmentList.map(({ Id, Name }, index) => (
-                                    <option key={Id} value={index}>
-                                        {Name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                    </p>
-                    <p>
-                        <label>
+                        </option>
+                        {assignmentList.map(({ Id, Name }, index) => (
+                            <option key={Id} value={index}>
+                                {Name}
+                            </option>
+                        ))}
+                    </Select>
+                    <Select
+                        variant="filled"
+                        size="sm"
+                        defaultValue={-1}
+                        onChange={(e) => setSelectedRubric(e.target.value)}
+                    >
+                        <option value={-1} disabled>
                             Rubric
-                            <select onChange={(e) => setSelectedRubric(e.target.value)}>
-                                <option disabled>Select Rubrics</option>
-                                {assignmentList[selectedAssignment]?.Assessment.Rubrics.map(
-                                    ({ RubricId, Name }, index) => (
-                                        <option key={RubricId} value={index} selected={index === selectedRubric}>
-                                            {Name}
-                                        </option>
-                                    ),
-                                )}
-                            </select>
-                        </label>
-                    </p>
-                    <p>
-                        <button
-                            type="button"
-                            disabled={Number.isNaN(+selectedAssignment) || Number.isNaN(+selectedRubric)}
-                            onClick={() => {
-                                const assignment = assignmentList[selectedAssignment];
-                                const rubric = assignment.Assessment.Rubrics[selectedRubric];
-                                addScraper({
-                                    orgUnit: { id: orgUnitId, name: moduleName },
-                                    assignment: {
-                                        id: assignment.Id,
-                                        name: assignment.Name,
-                                    },
-                                    rubric: {
-                                        id: rubric.RubricId,
-                                        name: rubric.Name,
-                                    },
-                                });
-                            }}
-                        >
-                            Add Scraper
-                        </button>
-                    </p>
+                        </option>
+                        {assignmentList[selectedAssignment]?.Assessment.Rubrics.map(({ RubricId, Name }, index) => (
+                            <option key={RubricId} value={index} selected={index === selectedRubric}>
+                                {Name}
+                            </option>
+                        ))}
+                    </Select>
+                    <Button
+                        colorScheme="green"
+                        leftIcon={<MdOutlineAddCircle />}
+                        type="button"
+                        isDisabled={Number.isNaN(+selectedAssignment) || Number.isNaN(+selectedRubric)}
+                        onClick={onAddAssignment}
+                    >
+                        Add Scraper
+                    </Button>
                 </>
             ) : (
                 <p>Loading...</p>
             )}
-        </div>
+        </Stack>
     );
 }
