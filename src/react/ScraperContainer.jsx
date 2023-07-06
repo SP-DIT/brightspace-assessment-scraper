@@ -10,8 +10,8 @@ export default function ScraperContainer({ scrapers }) {
                 </CardHeader>
                 <CardBody>
                     <VStack spacing={3} w="full">
-                        {scrapers.map((scraper) => (
-                            <SingleScraper scraper={scraper} />
+                        {scrapers.map((scraper, index) => (
+                            <SingleScraper key={index} scraper={scraper} />
                         ))}
                     </VStack>
                 </CardBody>

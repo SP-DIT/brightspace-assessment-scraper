@@ -4,13 +4,13 @@ function getDateTimeGenerated() {
     return new Date().toLocaleString().replace(', ', 'T');
 }
 
-function calculateGrade(score) {
+export function calculateGrade(score) {
     const start = 80;
     const step = 5;
     const grades = ['A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'D-'];
     const cutOffPoint = grades.map((_, idx) => start - idx * step);
 
-    for (let i = 0; i < cutOffPoint.length; i++) {
+    for (let i = 0; i < cutOffPoint.length; i += 1) {
         if (score >= cutOffPoint[i]) {
             return grades[i];
         }

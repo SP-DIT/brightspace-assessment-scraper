@@ -69,7 +69,7 @@ export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
     }
 
     async function getStudentRubricScore(orgId, evalObjectId, rubricId, studentId, jwt) {
-        await new Promise((resolve) => setTimeout(resolve, faker.number.int({ min: 100, max: 5000 })));
+        await new Promise((resolve) => setTimeout(resolve, faker.number.int({ min: 100, max: 100 })));
         return fakeCriteria.map(({ criteriaId }) => ({
             id: +criteriaId,
             score: faker.number.int(10),

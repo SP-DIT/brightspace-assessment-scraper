@@ -9,10 +9,11 @@
         "react-data-table-component": "^7.5.3",
         "react-dom": "^18.2.0",
         "react-icons": "^4.10.1",
+        "recharts": "^2.7.2",
         "styled-components": "^6.0.2"
     },
     "scripts": {
-        "start": "npm run build -- --watch --define:process.env.NODE_ENV=\\\"test\\\"  --outfile=dist/brightspace-assessment-scraper-test.js",
+        "start": "npm run build -- --watch --define:process.env.NODE_ENV=\\\"test\\\"  --outfile=dist/brightspace-assessment-scraper-test.js --serve",
         "build": "esbuild ./src/index.jsx --bundle --global-name=BrightspaceAssessmentScraper --outfile=dist/brightspace-assessment-scraper.js --jsx=automatic"
     },
     "devDependencies": {
