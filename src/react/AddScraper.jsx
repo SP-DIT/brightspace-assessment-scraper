@@ -1,4 +1,4 @@
-import { Box, Card, CardBody } from '@chakra-ui/react';
+import { Box, Card, CardBody, CardHeader, Heading } from '@chakra-ui/react';
 import ModulePicker from './ModulePicker';
 import AssignmentPicker from './AssignmentPicker';
 
@@ -10,6 +10,9 @@ export default function AddScraper() {
     return (
         <Box>
             <Card>
+                <CardHeader>
+                    <Heading>Add Scraper</Heading>
+                </CardHeader>
                 <CardBody>
                     <ModulePicker ExpandedComponent={ExpandedComponent} />
                 </CardBody>

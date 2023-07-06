@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { ChakraProvider, HStack, SimpleGrid } from '@chakra-ui/react';
+import { Box, ChakraProvider, SimpleGrid } from '@chakra-ui/react';
 import RealBrightspaceApi from '../api';
 import MockBrightspaceApi from '../__mocks__/api';
 import Scraper from '../scrape';
@@ -21,7 +21,7 @@ export default function ScraperApp({ brightspaceBase, brightspaceApiBase }) {
     return (
         <ChakraProvider>
             <ScraperContext.Provider value={singletonInstance}>
-                <SimpleGrid colums={2}>
+                <SimpleGrid columns={2} padding={5} spacing={5}>
                     <AddScraper />
                     <ScraperContainer scrapers={scrapers} />
                 </SimpleGrid>

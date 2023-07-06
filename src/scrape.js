@@ -35,7 +35,6 @@ export default function Scraper(brightspaceApi) {
     }
 
     async function scrapeStudent(students, jwt, config) {
-        console.log('Scraping each student...');
         const scrapeStudentRubricPromises = students.map(({ Identifier: userId }) =>
             scrapeStudentRubricScore(config.orgId, config.evalObjectId, config.rubricId, userId, jwt).finally(
                 config.container.incrementProcessedStudent,
@@ -43,7 +42,6 @@ export default function Scraper(brightspaceApi) {
         );
         const promises = await Promise.allSettled(scrapeStudentRubricPromises);
 
-        console.log('Formatting result...');
         const result = promises.map((promise, id) => {
             const student = students[id];
             const row = { student };
@@ -61,24 +59,28 @@ export default function Scraper(brightspaceApi) {
     }
 
     async function scrape(config) {
-        const { orgId, rubricId, container } = config;
+        const {
+            orgId,
+            rubricId,
+            container: { next, setTotalStudent, onError, incrementProcessedStudent },
+        } = config;
         try {
-            container.addProgressText('Getting Access Token...');
+            next();
             const jwt = await brightspaceApi.getAccessToken(orgId);
 
-            container.addProgressText('Getting Student List...');
+            next();
             const students = await getStudentList(orgId, jwt);
-            container.setTotalStudent(students.length);
-            container.addProgressText(`Found ${students.length} students...`);
+            setTotalStudent(students.length);
 
-            container.addProgressText(`Scraping rubric...`);
+            next();
             const getCriteriaPromise = brightspaceApi.getRubricCriteria(orgId, rubricId, jwt);
             const scrapePromise = scrapeStudent(students, jwt, config);
             const [criteria, studentResult] = await Promise.all([getCriteriaPromise, scrapePromise]);
 
+            next();
             return { criteria, studentResult };
         } catch (error) {
-            container.addProgressText(error.message);
+            onError(error);
         }
     }
 

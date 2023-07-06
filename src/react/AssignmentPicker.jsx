@@ -75,7 +75,7 @@ export default function AssignmentPicker({ orgUnit: { Id: orgUnitId, Name: modul
                         ))}
                     </Select>
                     <Button
-                        colorScheme="green"
+                        colorScheme="teal"
                         leftIcon={<MdOutlineAddCircle />}
                         type="button"
                         isDisabled={Number.isNaN(+selectedAssignment) || Number.isNaN(+selectedRubric)}
