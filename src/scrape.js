@@ -62,7 +62,7 @@ export default function Scraper(brightspaceApi) {
         const {
             orgId,
             rubricId,
-            container: { next, setTotalStudent, onError, incrementProcessedStudent },
+            container: { next, setTotalStudent, onError },
         } = config;
         try {
             next();

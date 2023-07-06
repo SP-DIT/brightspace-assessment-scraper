@@ -1,4 +1,4 @@
-import { Box, Card, CardBody, CardHeader, Heading } from '@chakra-ui/react';
+import { Box, Card, CardBody, CardHeader, VStack, Heading } from '@chakra-ui/react';
 import SingleScraper from './SingleScraper';
 
 export default function ScraperContainer({ scrapers }) {
@@ -9,9 +9,11 @@ export default function ScraperContainer({ scrapers }) {
                     <Heading>Scrapers</Heading>
                 </CardHeader>
                 <CardBody>
-                    {scrapers.map((scraper) => (
-                        <SingleScraper scraper={scraper} />
-                    ))}
+                    <VStack spacing={3} w="full">
+                        {scrapers.map((scraper) => (
+                            <SingleScraper scraper={scraper} />
+                        ))}
+                    </VStack>
                 </CardBody>
             </Card>
         </Box>
