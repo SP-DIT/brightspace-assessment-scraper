@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import DEFAULTS from '../../lib/defaults';
 import { calculateGrade } from '../../lib/data-formatter';
 
-const colors = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink'].map(
+const colors = ['red', 'orange', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink'].map(
     (color) => theme.colors[color][200]
 );
 
@@ -37,7 +37,11 @@ export default function GradesDistribution({ data }) {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="grade" />
                         <YAxis />
-                        <Legend verticalAlign="top" height={36} />
+                        <Legend
+                            wrapperStyle={{ fontSize: '10px', textAlign: 'center' }}
+                            verticalAlign="bottom"
+                            height={50}
+                        />
                         <Tooltip />
 
                         {stacks.sort().map((stack, index) => (
