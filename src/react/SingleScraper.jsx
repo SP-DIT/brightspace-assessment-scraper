@@ -17,12 +17,14 @@ import {
     Flex,
     VStack,
     Collapse,
+    HStack,
 } from '@chakra-ui/react';
 import { useMemo, useState, useContext } from 'react';
 import { FaPersonDigging } from 'react-icons/fa6';
 import { TbCircleDotted } from 'react-icons/tb';
 import { MdCheckCircle } from 'react-icons/md';
 import { BiShowAlt, BiHide } from 'react-icons/bi';
+import { BsTrash } from 'react-icons/bs';
 import ScraperContext from './ScraperContext';
 import GradesDistribution from './ScraperGraphs/GradesDistribution';
 import { generateCheckingVerifyingCsv, generateSasCsv } from '../lib/data-formatter';
@@ -135,7 +137,7 @@ function ScraperSteps({ orgUnit, assignment, rubric }) {
 
     if (!isStarted)
         return (
-            <Button rightIcon={<FaPersonDigging />} onClick={onScrape}>
+            <Button rightIcon={<FaPersonDigging />} onClick={onScrape} colorScheme="teal">
                 Scrape
             </Button>
         );
@@ -162,7 +164,8 @@ function ScraperSteps({ orgUnit, assignment, rubric }) {
     );
 }
 
-export default function SingleScraper({ scraper: { orgUnit, assignment, rubric } }) {
+export default function SingleScraper({ scraper: { orgUnit, assignment, rubric }, index }) {
+    const { removeScraper } = useContext(ScraperContext);
     const [show, setShow] = useState(true);
 
     const handleToggle = () => setShow(!show);
@@ -170,12 +173,18 @@ export default function SingleScraper({ scraper: { orgUnit, assignment, rubric }
     return (
         <Card width="100%">
             <CardHeader>
-                <Flex>
+                <HStack spacing={2}>
                     <Heading size="xs" textTransform="uppercase" onClick={handleToggle}>
                         [{orgUnit.name}] {assignment.name} - {rubric.name}
                     </Heading>
                     <IconButton icon={show ? <BiHide /> : <BiShowAlt />} onClick={handleToggle} />
-                </Flex>
+                    <IconButton
+                        icon={<BsTrash />}
+                        onClick={() => removeScraper(index)}
+                        bgColor="salmon"
+                        color="white"
+                    />
+                </HStack>
             </CardHeader>
             <Collapse in={show}>
                 <CardBody>

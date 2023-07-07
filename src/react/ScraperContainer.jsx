@@ -11,7 +11,7 @@ export default function ScraperContainer({ scrapers }) {
                 <CardBody>
                     <VStack spacing={3} w="full">
                         {scrapers.map((scraper, index) => (
-                            <SingleScraper key={index} scraper={scraper} />
+                            <SingleScraper key={index} index={index} scraper={scraper} />
                         ))}
                     </VStack>
                 </CardBody>

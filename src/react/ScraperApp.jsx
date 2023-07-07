@@ -6,16 +6,16 @@ import Scraper from '../lib/scrape';
 import ScraperContext from './ScraperContext';
 import ScraperContainer from './ScraperContainer';
 import AddScraper from './AddScraper';
+import useScraper from './useScraper';
 
 const BrightspaceApi = process.env.NODE_ENV === 'test' ? MockBrightspaceApi : RealBrightspaceApi;
 
 export default function ScraperApp({ brightspaceBase, brightspaceApiBase }) {
-    const [scrapers, setScrapers] = useState([]);
-    const addScraper = useCallback((scraper) => setScrapers([...scrapers, scraper]), [scrapers]);
+    const [scrapers, { addScraper, removeScraper }] = useScraper('scraper-brightspace');
     const singletonInstance = useMemo(() => {
         const brightspaceApi = BrightspaceApi(brightspaceBase, brightspaceApiBase);
         const scraper = Scraper(brightspaceApi);
-        return { brightspaceApi, scraper, addScraper };
+        return { brightspaceApi, scraper, addScraper, removeScraper };
     }, [addScraper]);
 
     return (
