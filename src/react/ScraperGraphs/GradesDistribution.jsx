@@ -1,8 +1,12 @@
-import { Card, CardBody } from '@chakra-ui/react';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Card, CardBody, theme } from '@chakra-ui/react';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useMemo } from 'react';
 import DEFAULTS from '../../defaults';
 import { calculateGrade } from '../../data-formatter';
+
+const colors = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink'].map(
+    (color) => theme.colors[color][200],
+);
 
 const processData = (data) => {
     const count = {};
@@ -25,18 +29,22 @@ const processData = (data) => {
 
 export default function GradesDistribution({ data }) {
     const { sections: stacks, output: chartData } = useMemo(() => processData(data), [data]);
-    
     return (
         <Card>
             <CardBody>
-                <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="grade" />
-                    <YAxis />
-                    {stacks.sort().map((stack) => (
-                        <Bar key={stack} dataKey={stack} stackId="a" />
-                    ))}
-                </BarChart>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="grade" />
+                        <YAxis />
+                        <Legend verticalAlign="top" height={36} />
+                        <Tooltip />
+
+                        {stacks.sort().map((stack, index) => (
+                            <Bar key={stack} dataKey={stack} stackId="a" fill={colors[index]} />
+                        ))}
+                    </BarChart>
+                </ResponsiveContainer>
             </CardBody>
         </Card>
     );

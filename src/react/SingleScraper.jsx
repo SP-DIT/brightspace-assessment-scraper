@@ -13,11 +13,15 @@ import {
     StatNumber,
     StatHelpText,
     Stack,
+    IconButton,
+    Flex,
+    VStack,
 } from '@chakra-ui/react';
 import { useMemo, useState, useContext } from 'react';
 import { FaPersonDigging } from 'react-icons/fa6';
 import { TbCircleDotted } from 'react-icons/tb';
 import { MdCheckCircle } from 'react-icons/md';
+import { BiShowAlt, BiHide } from 'react-icons/bi';
 import ScraperContext from './ScraperContext';
 import GradesDistribution from './ScraperGraphs/GradesDistribution';
 
@@ -52,6 +56,15 @@ function ScraperStepsList({ stepNumber, error }) {
                 </ScraperStepItem>
             ))}
         </List>
+    );
+}
+
+function ScraperDownload({ data }) {
+    return (
+        <VStack width={300}>
+            <Button width="100%">Download SAS Upload</Button>
+            <Button width="100%">Download Checker/Verifier</Button>
+        </VStack>
     );
 }
 
@@ -114,7 +127,14 @@ function ScraperSteps({ orgId, assignmentId, rubricId }) {
         <Stack spacing={5}>
             <ScraperStepsList stepNumber={stepNumber} error={error} />
             <Divider />
-            <ScraperProgress processedStudent={processedStudent} totalStudent={totalStudent} startDate={startDate} />
+            <Flex>
+                <ScraperProgress
+                    processedStudent={processedStudent}
+                    totalStudent={totalStudent}
+                    startDate={startDate}
+                    />
+                <ScraperDownload data={data} />
+            </Flex>
             <Divider />
             {data && <ScraperChart data={data} />}
         </Stack>
@@ -122,14 +142,21 @@ function ScraperSteps({ orgId, assignmentId, rubricId }) {
 }
 
 export default function SingleScraper({ scraper: { orgUnit, assignment, rubric } }) {
+    const [show, setShow] = useState(true);
+
+    const handleToggle = () => setShow(!show);
+
     return (
         <Card width="100%">
             <CardHeader>
-                <Heading size="xs" textTransform="uppercase">
-                    [{orgUnit.name}] {assignment.name} - {rubric.name}
-                </Heading>
+                <Flex>
+                    <Heading size="xs" textTransform="uppercase" onClick={handleToggle}>
+                        [{orgUnit.name}] {assignment.name} - {rubric.name}
+                    </Heading>
+                    <IconButton icon={show ? <BiHide /> : <BiShowAlt />} onClick={handleToggle} />
+                </Flex>
             </CardHeader>
-            <CardBody>
+            <CardBody hidden={!show}>
                 <ScraperSteps orgId={orgUnit.id} assignmentId={assignment.id} rubricId={rubric.id} />
             </CardBody>
         </Card>

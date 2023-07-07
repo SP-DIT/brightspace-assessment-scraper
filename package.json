@@ -13,8 +13,8 @@
         "styled-components": "^6.0.2"
     },
     "scripts": {
-        "start": "npm run build -- --watch --define:process.env.NODE_ENV=\\\"test\\\"  --outfile=dist/brightspace-assessment-scraper-test.js --serve",
-        "build": "esbuild ./src/index.jsx --bundle --global-name=BrightspaceAssessmentScraper --outfile=dist/brightspace-assessment-scraper.js --jsx=automatic"
+        "start": "npm run build -- --watch --define:process.env.NODE_ENV=\\\"test\\\"  --outfile=dist/brightspace-assessment-scraper-test.js --sourcemap",
+        "build": "esbuild ./src/index.jsx --bundle --minify --global-name=BrightspaceAssessmentScraper --outfile=dist/brightspace-assessment-scraper.js --jsx=automatic"
     },
     "devDependencies": {
         "@faker-js/faker": "^8.0.2",
@@ -24,6 +24,7 @@
         "eslint-plugin-import": "^2.27.5",
         "eslint-plugin-jsx-a11y": "^6.7.1",
         "eslint-plugin-react": "^7.32.2",
-        "eslint-plugin-react-hooks": "^4.6.0"
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "http-server": "^14.1.1"
     }
 }
