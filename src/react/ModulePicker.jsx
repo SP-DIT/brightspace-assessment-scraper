@@ -25,6 +25,7 @@ export default function ModulePicker({ ExpandedComponent }) {
                         name: 'Semester',
                         selector: ({ OrgUnit: { Code } }) => Code.split('-').slice(-1)[0],
                         sortable: true,
+                        width: '100px',
                     },
                     {
                         name: 'Name',
