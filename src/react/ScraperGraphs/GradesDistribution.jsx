@@ -1,11 +1,11 @@
 import { Card, CardBody, theme } from '@chakra-ui/react';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useMemo } from 'react';
-import DEFAULTS from '../../defaults';
-import { calculateGrade } from '../../data-formatter';
+import DEFAULTS from '../../lib/defaults';
+import { calculateGrade } from '../../lib/data-formatter';
 
 const colors = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'cyan', 'purple', 'pink'].map(
-    (color) => theme.colors[color][200],
+    (color) => theme.colors[color][200]
 );
 
 const processData = (data) => {

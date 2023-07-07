@@ -16,6 +16,7 @@ import {
     IconButton,
     Flex,
     VStack,
+    Collapse,
 } from '@chakra-ui/react';
 import { useMemo, useState, useContext } from 'react';
 import { FaPersonDigging } from 'react-icons/fa6';
@@ -24,6 +25,7 @@ import { MdCheckCircle } from 'react-icons/md';
 import { BiShowAlt, BiHide } from 'react-icons/bi';
 import ScraperContext from './ScraperContext';
 import GradesDistribution from './ScraperGraphs/GradesDistribution';
+import { generateCheckingVerifyingCsv, generateSasCsv } from '../lib/data-formatter';
 
 function ScraperChart({ data: { studentResult } }) {
     return <GradesDistribution data={studentResult} />;
@@ -59,11 +61,26 @@ function ScraperStepsList({ stepNumber, error }) {
     );
 }
 
-function ScraperDownload({ data }) {
+function ScraperDownload({ data, titleSuffix, startDate }) {
+    const generateDate = startDate.toLocaleString().replace(', ', 'T');
     return (
         <VStack width={300}>
-            <Button width="100%">Download SAS Upload</Button>
-            <Button width="100%">Download Checker/Verifier</Button>
+            <Button
+                width="100%"
+                isDisabled={!data}
+                onClick={() => generateSasCsv(data.criteria, data.studentResult, titleSuffix, generateDate)}
+            >
+                Download SAS Upload
+            </Button>
+            <Button
+                width="100%"
+                isDisabled={!data}
+                onClick={() =>
+                    generateCheckingVerifyingCsv(data.criteria, data.studentResult, titleSuffix, generateDate)
+                }
+            >
+                Download Checker/Verifier
+            </Button>
         </VStack>
     );
 }
@@ -81,7 +98,7 @@ function ScraperProgress({ processedStudent, totalStudent, startDate }) {
     );
 }
 
-function ScraperSteps({ orgId, assignmentId, rubricId }) {
+function ScraperSteps({ orgUnit, assignment, rubric }) {
     const { scraper } = useContext(ScraperContext);
 
     const [isStarted, setIsStarted] = useState(false);
@@ -106,9 +123,9 @@ function ScraperSteps({ orgId, assignmentId, rubricId }) {
         setIsStarted(true);
         scraper
             .scrape({
-                orgId,
-                evalObjectId: assignmentId,
-                rubricId,
+                orgId: orgUnit.id,
+                evalObjectId: assignment.id,
+                rubricId: rubric.id,
                 container: { next, setTotalStudent, onError, incrementProcessedStudent },
             })
             .then((data) => {
@@ -132,8 +149,12 @@ function ScraperSteps({ orgId, assignmentId, rubricId }) {
                     processedStudent={processedStudent}
                     totalStudent={totalStudent}
                     startDate={startDate}
-                    />
-                <ScraperDownload data={data} />
+                />
+                <ScraperDownload
+                    data={data}
+                    titleSuffix={`${orgUnit.name}-${assignment.name}-${rubric.name}`}
+                    startDate={startDate}
+                />
             </Flex>
             <Divider />
             {data && <ScraperChart data={data} />}
@@ -156,9 +177,11 @@ export default function SingleScraper({ scraper: { orgUnit, assignment, rubric }
                     <IconButton icon={show ? <BiHide /> : <BiShowAlt />} onClick={handleToggle} />
                 </Flex>
             </CardHeader>
-            <CardBody hidden={!show}>
-                <ScraperSteps orgId={orgUnit.id} assignmentId={assignment.id} rubricId={rubric.id} />
-            </CardBody>
+            <Collapse in={show}>
+                <CardBody>
+                    <ScraperSteps orgUnit={orgUnit} assignment={assignment} rubric={rubric} />
+                </CardBody>
+            </Collapse>
         </Card>
     );
 }

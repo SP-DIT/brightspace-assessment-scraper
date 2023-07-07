@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import DEFAULTS from '../defaults';
+import DEFAULTS from '../lib/defaults';
 
 const fakeClassList = Array(50)
     .fill(null)

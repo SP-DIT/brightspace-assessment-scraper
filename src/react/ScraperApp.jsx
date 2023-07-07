@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Box, ChakraProvider, SimpleGrid } from '@chakra-ui/react';
-import RealBrightspaceApi from '../api';
+import RealBrightspaceApi from '../lib/api';
 import MockBrightspaceApi from '../__mocks__/api';
-import Scraper from '../scrape';
+import Scraper from '../lib/scrape';
 import ScraperContext from './ScraperContext';
 import ScraperContainer from './ScraperContainer';
 import AddScraper from './AddScraper';
