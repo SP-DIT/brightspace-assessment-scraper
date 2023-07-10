@@ -7,6 +7,7 @@ import ScraperContext from './ScraperContext';
 import ScraperContainer from './ScraperContainer';
 import AddScraper from './AddScraper';
 import useScraper from './useScraper';
+import Footer from './Footer';
 
 const BrightspaceApi = process.env.NODE_ENV === 'test' ? MockBrightspaceApi : RealBrightspaceApi;
 
@@ -25,6 +26,7 @@ export default function ScraperApp({ brightspaceBase, brightspaceApiBase }) {
                     <AddScraper />
                     <ScraperContainer scrapers={scrapers} />
                 </SimpleGrid>
+                <Footer />
             </ScraperContext.Provider>
         </ChakraProvider>
     );
