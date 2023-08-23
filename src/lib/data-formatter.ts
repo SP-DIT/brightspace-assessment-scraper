@@ -118,12 +118,12 @@ export function generateCheckingVerifyingCsv(
         aoa.push(['Marked by:', '', 'date:', '', 'Sign:']);
         aoa.push(['Checked by:', '', 'date:', '', 'Sign:']);
 
-        const outputFilename = `${section}_${title}_brightspace_rubric_marksheet.xlsx`;
+        const outputFilename = `${section}_${title}.xlsx`;
 
         aoaBySection.push({ aoa, outputFilename });
     });
 
-    downloadXlsxZips(aoaBySection, `${title}_brightspace_rubric_marksheet_${dateTimeGenerated}.zip`);
+    downloadXlsxZips(aoaBySection, `${title}_${dateTimeGenerated}.zip`);
 }
 
 export function generateSasCsvData(studentResult, title) {
