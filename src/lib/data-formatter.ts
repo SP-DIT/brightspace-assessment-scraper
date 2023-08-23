@@ -32,7 +32,7 @@ function downloadXlsxZips(aoas, zipOutputFilename) {
         const excelBlob = new Blob([excelBuffer], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         });
-        zip.file(outputFilename, excelBlob);
+        zip.file(outputFilename.replaceAll('/', ''), excelBlob);
     });
 
     return zip.generateAsync({ type: 'blob' }).then((content) => downloadFile(content, zipOutputFilename));
