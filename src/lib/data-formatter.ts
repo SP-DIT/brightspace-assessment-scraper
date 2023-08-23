@@ -1,6 +1,7 @@
 import DEFAULTS from './defaults';
-
-
+import JSZip from 'jszip';
+import * as xlsx from 'xlsx';
+import FileSaver from 'file-saver';
 
 function getDateTimeGenerated() {
     return new Date().toLocaleString().replace(', ', 'T');
@@ -21,6 +22,22 @@ export function calculateGrade(score) {
     return 'F';
 }
 
+function downloadXlsxZips(aoas, zipOutputFilename) {
+    const zip = new JSZip();
+    aoas.forEach(({ aoa, outputFilename }) => {
+        const workbook = xlsx.utils.book_new();
+        const worksheet = xlsx.utils.aoa_to_sheet(aoa);
+        xlsx.utils.book_append_sheet(workbook, worksheet);
+        const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const excelBlob = new Blob([excelBuffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        zip.file(outputFilename, excelBlob);
+    });
+
+    return zip.generateAsync({ type: 'blob' }).then((content) => downloadFile(content, zipOutputFilename));
+}
+
 function downloadCsv(rows, options = { outputFilename: '', delimiter: ',' }) {
     let csvContent = 'data:text/csv;charset=utf-8,';
 
@@ -29,58 +46,49 @@ function downloadCsv(rows, options = { outputFilename: '', delimiter: ',' }) {
         csvContent += row + '\r\n';
     });
 
-    var encodedUri = encodeURI(csvContent);
-    var link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-
+    const encodedUri = encodeURI(csvContent);
     let outputFilename = options.outputFilename;
     if (!outputFilename) {
         outputFilename = `brightspace_rubric_${Math.floor(+new Date() / 1000)}.csv`;
     }
-    link.setAttribute('download', outputFilename);
-    document.body.appendChild(link); // Required for FF
 
-    link.click(); // This will download the data file named "my_data.csv".
+    return downloadFile(encodedUri, outputFilename);
+}
+
+function downloadFile(data, outputFilename) {
+    FileSaver.saveAs(data, outputFilename);
 }
 
 export function generateCheckingVerifyingCsv(
     criteria,
     studentResult,
     title,
-    dateTimeGenerated = getDateTimeGenerated()
+    dateTimeGenerated = getDateTimeGenerated(),
+    options = {
+        acadYear: 'AYXX/XX',
+        semester: 'X',
+        weightage: '???',
+    }
 ) {
-    console.log(criteria, studentResult);
-    const csv = [['AYXX/XX', '', 'Semester X', '', title, '', 'Weightage:', '???'], [], [], [], []];
-
     const criteriaMax = [
         dateTimeGenerated,
-        '',
         '',
         'Max',
         ...criteria.map(({ max }) => max), // max of each criteria
         criteria.reduce((total, { max }) => total + max, 0), // max total
     ];
 
-    const criteriaNames = [
-        'Student Id',
-        'Name',
-        'IChat',
-        'Class',
-        ...criteria.map(({ name }) => name),
-        'Total',
-        'Grade',
-    ];
+    const criteriaNames = ['Student Id', 'Name', 'Class', ...criteria.map(({ name }) => name), 'Total', 'Grade'];
 
-    const sections = new Set();
+    const sections: Set<string> = new Set();
     const sectionsMap = {};
 
     studentResult.forEach((result) => {
         const { student } = result;
         const studentId = student['OrgDefinedId'].substring(3);
         const studentName = student['FirstName'];
-        const ichatEmail = student['Username'];
         const studentClass = student['Section'];
-        const row = [studentId, studentName, ichatEmail, studentClass];
+        const row = [studentId, studentName, studentClass];
         criteria.forEach((criterion) => {
             const { criteriaId } = criterion;
             const score = result.total ? result[criteriaId] || 0 : 'AB';
@@ -94,23 +102,28 @@ export function generateCheckingVerifyingCsv(
         sectionsMap[studentClass].push(row);
     });
 
-    const sectionsArray = [...sections];
+    const sectionsArray: string[] = [...sections];
+    const aoaBySection: any[] = [];
     sectionsArray.sort().forEach((section) => {
-        csv.push([]);
-        csv.push([]);
-        csv.push([]);
-        csv.push([]);
         const sectionRows = sectionsMap[section].sort();
-        csv.push(criteriaMax);
-        csv.push(criteriaNames);
-        sectionRows.forEach((row) => csv.push(row));
-        csv.push(['Marked by:', '', 'date:', '', 'Sign:']);
-        csv.push(['Checked by:', '', 'date:', '', 'Sign:']);
+
+        const aoa = [[options.acadYear, `Semester ${options.semester}`, title, 'Weightage:', options.weightage], []];
+        aoa.push([]);
+        aoa.push(criteriaMax);
+        aoa.push(criteriaNames);
+
+        sectionRows.forEach((row) => aoa.push(row));
+
+        aoa.push([]);
+        aoa.push(['Marked by:', '', 'date:', '', 'Sign:']);
+        aoa.push(['Checked by:', '', 'date:', '', 'Sign:']);
+
+        const outputFilename = `${section}_${title}_brightspace_rubric_marksheet.xlsx`;
+
+        aoaBySection.push({ aoa, outputFilename });
     });
 
-    downloadCsv(csv, {
-        outputFilename: `brightspace_rubric_${title}_marksheet_${dateTimeGenerated}.csv`,
-    });
+    downloadXlsxZips(aoaBySection, `${title}_brightspace_rubric_marksheet_${dateTimeGenerated}.zip`);
 }
 
 export function generateSasCsvData(studentResult, title) {
@@ -144,5 +157,6 @@ export function generateSasCsv(criteria, studentResult, title, dateTimeGenerated
     const csv = generateSasCsvData(studentResult, title);
     downloadCsv(csv, {
         outputFilename: `brightspace_rubric_${title}_sas_${dateTimeGenerated}.csv`,
+        delimiter: ',',
     });
 }
