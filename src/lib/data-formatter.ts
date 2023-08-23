@@ -32,7 +32,7 @@ function downloadXlsxZips(aoas, zipOutputFilename) {
         const excelBlob = new Blob([excelBuffer], {
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         });
-        zip.file(outputFilename, excelBlob);
+        zip.file(outputFilename.replaceAll('/', ''), excelBlob);
     });
 
     return zip.generateAsync({ type: 'blob' }).then((content) => downloadFile(content, zipOutputFilename));
@@ -84,18 +84,18 @@ export function generateCheckingVerifyingCsv(
     const sectionsMap = {};
 
     studentResult.forEach((result) => {
-        const { student } = result;
+        const { student, scores } = result;
         const studentId = student['OrgDefinedId'].substring(3);
         const studentName = student['FirstName'];
         const studentClass = student['Section'];
         const row = [studentId, studentName, studentClass];
         criteria.forEach((criterion) => {
             const { criteriaId } = criterion;
-            const score = result.total ? result[criteriaId] || 0 : 'AB';
+            const score = scores.total ? scores[criteriaId] || 0 : 'AB';
             row.push(score);
         });
-        row.push(result.total || 'AB');
-        row.push(calculateGrade(result.total || 0));
+        row.push(scores.total || 'AB');
+        row.push(calculateGrade(scores.total || 0));
 
         sections.add(studentClass);
         if (!sectionsMap[studentClass]) sectionsMap[studentClass] = [];
@@ -118,12 +118,12 @@ export function generateCheckingVerifyingCsv(
         aoa.push(['Marked by:', '', 'date:', '', 'Sign:']);
         aoa.push(['Checked by:', '', 'date:', '', 'Sign:']);
 
-        const outputFilename = `${section}_${title}_brightspace_rubric_marksheet.xlsx`;
+        const outputFilename = `${section}_${title}.xlsx`;
 
         aoaBySection.push({ aoa, outputFilename });
     });
 
-    downloadXlsxZips(aoaBySection, `${title}_brightspace_rubric_marksheet_${dateTimeGenerated}.zip`);
+    downloadXlsxZips(aoaBySection, `${title}_${dateTimeGenerated}.zip`);
 }
 
 export function generateSasCsvData(studentResult, title) {

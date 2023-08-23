@@ -24,7 +24,7 @@ const fakeSections: Section[] = Array(5)
     .fill(null)
     .map((_, index) => ({
         SectionId: faker.string.numeric(6),
-        Name: `Class ${index + 1}`,
+        Name: `DIT/FT/2B/0${index + 1}`,
         Enrollments: fakeClassList.slice(index * 10, index * 10 + 10).map(({ Identifier }) => Identifier),
     }));
 
