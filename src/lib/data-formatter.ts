@@ -47,10 +47,15 @@ export function generateCheckingVerifyingCsv(
     criteria,
     studentResult,
     title,
-    dateTimeGenerated = getDateTimeGenerated()
+    dateTimeGenerated = getDateTimeGenerated(),
+    options = {
+        acadYear: 'AYXX/XX',
+        semester: 'X',
+        weightage: '???'
+    }
 ) {
     console.log(criteria, studentResult);
-    const csv = [['AYXX/XX', '', 'Semester X', '', title, '', 'Weightage:', '???'], [], [], [], []];
+    const csv = [[options.acadYear, '', `Semester ${options.semester}`, '', title, '', 'Weightage:', options.weightage], [], [], [], []];
 
     const criteriaMax = [
         dateTimeGenerated,
