@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Card, CardBody, CardHeader, Collapse, Heading } from '@chakra-ui/react';
+import { Box, Card, CardBody, CardHeader, Collapse, Heading, Icon } from '@chakra-ui/react';
 import ModulePicker from './ModulePicker';
 import AssignmentPicker from './AssignmentPicker';
 
@@ -12,7 +12,7 @@ export default function AddScraper() {
     return (
         <Box>
             <Card>
-                <CardHeader>
+                <CardHeader style={{ cursor: 'pointer' }}>
                     <Heading onClick={() => setShow(!show)}>Add Scraper</Heading>
                 </CardHeader>
                 <Collapse in={show}>
