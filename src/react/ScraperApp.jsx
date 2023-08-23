@@ -22,7 +22,7 @@ export default function ScraperApp({ brightspaceBase, brightspaceApiBase }) {
     return (
         <ChakraProvider>
             <ScraperContext.Provider value={singletonInstance}>
-                <SimpleGrid columns={2} padding={5} spacing={5}>
+                <SimpleGrid rows={2} padding={5} spacing={5}>
                     <AddScraper />
                     <ScraperContainer scrapers={scrapers} />
                 </SimpleGrid>

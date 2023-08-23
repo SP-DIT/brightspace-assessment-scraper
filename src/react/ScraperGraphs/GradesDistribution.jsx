@@ -11,7 +11,7 @@ const colors = ['red', 'orange', 'green', 'teal', 'blue', 'cyan', 'purple', 'pin
 const processData = (data) => {
     const count = {};
     const sections = new Set();
-    data.forEach(({ student: { Section: section }, total }) => {
+    data.forEach(({ student: { Section: section }, scores: { total } }) => {
         const grades = calculateGrade(total || 0);
         if (!count[grades]) count[grades] = {};
         count[grades][section] = (count[grades][section] || 0) + 1;
