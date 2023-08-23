@@ -1,4 +1,5 @@
 import DEFAULTS from './defaults';
+import JSZip from 'jszip';
 import * as xlsx from 'xlsx';
 import FileSaver from 'file-saver';
 
@@ -21,21 +22,20 @@ export function calculateGrade(score) {
     return 'F';
 }
 
-function downloadXlsx(aoa, options = { outputFilename: '' }) {
-    const workbook = xlsx.utils.book_new();
-    const worksheet = xlsx.utils.aoa_to_sheet(aoa);
-    xlsx.utils.book_append_sheet(workbook, worksheet);
-    const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const excelBlob = new Blob([excelBuffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+function downloadXlsxZips(aoas, zipOutputFilename) {
+    const zip = new JSZip();
+    aoas.forEach(({ aoa, outputFilename }) => {
+        const workbook = xlsx.utils.book_new();
+        const worksheet = xlsx.utils.aoa_to_sheet(aoa);
+        xlsx.utils.book_append_sheet(workbook, worksheet);
+        const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const excelBlob = new Blob([excelBuffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        zip.file(outputFilename, excelBlob);
     });
 
-    let outputFilename = options.outputFilename;
-    if (!outputFilename) {
-        outputFilename = `brightspace_rubric_${Math.floor(+new Date() / 1000)}.xlsx`;
-    }
-
-    return downloadFile(excelBlob, outputFilename);
+    return zip.generateAsync({ type: 'blob' }).then((content) => downloadFile(content, zipOutputFilename));
 }
 
 function downloadCsv(rows, options = { outputFilename: '', delimiter: ',' }) {
@@ -70,9 +70,6 @@ export function generateCheckingVerifyingCsv(
         weightage: '???',
     }
 ) {
-    console.log(criteria, studentResult);
-    const csv = [[options.acadYear, `Semester ${options.semester}`, title, 'Weightage:', options.weightage], []];
-
     const criteriaMax = [
         dateTimeGenerated,
         '',
@@ -106,22 +103,27 @@ export function generateCheckingVerifyingCsv(
     });
 
     const sectionsArray: string[] = [...sections];
+    const aoaBySection: any[] = [];
     sectionsArray.sort().forEach((section) => {
-        csv.push([]);
-        csv.push([]);
-        csv.push([]);
-        csv.push([]);
         const sectionRows = sectionsMap[section].sort();
-        csv.push(criteriaMax);
-        csv.push(criteriaNames);
-        sectionRows.forEach((row) => csv.push(row));
-        csv.push(['Marked by:', '', 'date:', '', 'Sign:']);
-        csv.push(['Checked by:', '', 'date:', '', 'Sign:']);
+
+        const aoa = [[options.acadYear, `Semester ${options.semester}`, title, 'Weightage:', options.weightage], []];
+        aoa.push([]);
+        aoa.push(criteriaMax);
+        aoa.push(criteriaNames);
+
+        sectionRows.forEach((row) => aoa.push(row));
+
+        aoa.push([]);
+        aoa.push(['Marked by:', '', 'date:', '', 'Sign:']);
+        aoa.push(['Checked by:', '', 'date:', '', 'Sign:']);
+
+        const outputFilename = `${section}_${title}_brightspace_rubric_marksheet.xlsx`;
+
+        aoaBySection.push({ aoa, outputFilename });
     });
 
-    downloadXlsx(csv, {
-        outputFilename: `brightspace_rubric_${title}_marksheet_${dateTimeGenerated}.xlsx`,
-    });
+    downloadXlsxZips(aoaBySection, `${title}_brightspace_rubric_marksheet_${dateTimeGenerated}.zip`);
 }
 
 export function generateSasCsvData(studentResult, title) {
