@@ -13,7 +13,7 @@
         "styled-components": "^6.0.2"
     },
     "scripts": {
-        "start": "npm run esbuild -- --watch --define:process.env.NODE_ENV=\\\"test\\\"  --outfile=dist/brightspace-assessment-scraper-test.js --sourcemap --iife",
+        "start": "npm run esbuild -- --watch --define:process.env.NODE_ENV=\\\"test\\\"  --outfile=dist/brightspace-assessment-scraper-test.js --sourcemap",
         "build": "npm run esbuild -- --minify",
         "esbuild": "esbuild ./src/index.js --bundle --global-name=BrightspaceAssessmentScraper --outfile=dist/brightspace-assessment-scraper.js --jsx=automatic"
     },
