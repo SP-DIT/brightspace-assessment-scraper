@@ -2,6 +2,7 @@ import DEFAULTS from './defaults';
 import JSZip from 'jszip';
 import * as xlsx from 'xlsx';
 import FileSaver from 'file-saver';
+import { StudentScore } from './brightspace-assessment-scraper';
 
 function getDateTimeGenerated() {
     return new Date().toLocaleString().replace(', ', 'T');
@@ -61,7 +62,7 @@ function downloadFile(data, outputFilename) {
 
 export function generateCheckingVerifyingCsv(
     criteria,
-    studentResult,
+    studentResult: StudentScore[],
     title,
     dateTimeGenerated = getDateTimeGenerated(),
     options = {
@@ -87,8 +88,8 @@ export function generateCheckingVerifyingCsv(
         const { student, scores } = result;
         const studentId = student['OrgDefinedId'].substring(3);
         const studentName = student['FirstName'];
-        const studentClass = student['Section'];
-        const row = [studentId, studentName, studentClass];
+        const studentClass = student['Section'] || 'No Class';
+        const row: any[] = [studentId, studentName, studentClass];
         criteria.forEach((criterion) => {
             const { criteriaId } = criterion;
             const score = scores.total ? scores[criteriaId] || 0 : 'AB';
@@ -126,7 +127,7 @@ export function generateCheckingVerifyingCsv(
     downloadXlsxZips(aoaBySection, `${title}_${dateTimeGenerated}.zip`);
 }
 
-export function generateSasCsvData(studentResult, title) {
+export function generateSasCsvData(studentResult: StudentScore[], title) {
     const csv = [
         [DEFAULTS.SAS_CSV_CLASS_COLUMN_NAME, 'Name', 'Student Id', title, DEFAULTS.SAS_CSV_GRADES_COLUMN_NAME],
     ];
@@ -135,6 +136,10 @@ export function generateSasCsvData(studentResult, title) {
             .sort(
                 ({ student: { Section: s1, OrgDefinedId: id1 } }, { student: { Section: s2, OrgDefinedId: id2 } }) => {
                     // sort by class then sort by student id
+                    if (!s1 && !s2) return 0;
+                    else if (!s1) return 1;
+                    else if (!s2) return -1;
+
                     const classSort = s1.localeCompare(s2);
                     if (classSort === 0) {
                         return id1.localeCompare(id2);
@@ -142,13 +147,12 @@ export function generateSasCsvData(studentResult, title) {
                     return classSort;
                 }
             )
-            .map(({ student: { Section: studentClass, FirstName: studentName, OrgDefinedId: studentId }, total }) => [
-                studentClass,
-                studentName,
-                studentId.substring(3),
-                total || 'AB',
-                calculateGrade(total || 0),
-            ])
+            .map(
+                ({
+                    student: { Section: studentClass, FirstName: studentName, OrgDefinedId: studentId },
+                    scores: { total },
+                }) => [studentClass, studentName, studentId.substring(3), total || 'AB', calculateGrade(total || 0)]
+            )
     );
     return csv;
 }
