@@ -12,12 +12,14 @@ import {
     StatLabel,
     StatNumber,
     StatHelpText,
-    Stack,
     IconButton,
     Flex,
+    Stack,
     VStack,
     Collapse,
     HStack,
+    Spacer,
+    Container,
 } from '@chakra-ui/react';
 import { useMemo, useState, useContext } from 'react';
 import { FaPersonDigging } from 'react-icons/fa6';
@@ -29,8 +31,8 @@ import ScraperContext from './ScraperContext';
 import GradesDistribution from './ScraperGraphs/GradesDistribution';
 import { generateCheckingVerifyingCsv, generateSasCsv } from '../lib/data-formatter';
 
-function ScraperChart({ data: { studentResult } }) {
-    return <GradesDistribution data={studentResult} />;
+function ScraperChart({ data }) {
+    return <Container width={300}>{data && <GradesDistribution data={data.studentResult} />}</Container>;
 }
 
 function ScraperStepItem({ status, children }) {
@@ -63,23 +65,46 @@ function ScraperStepsList({ stepNumber, error }) {
     );
 }
 
-function ScraperDownload({ data, titleSuffix, startDate }) {
+function ScraperDownload({ orgUnit, assignment, data, title, startDate }) {
     const generateDate = startDate.toLocaleString().replace(', ', 'T');
     return (
         <VStack width={300}>
             <Button
                 width="100%"
                 isDisabled={!data}
-                onClick={() => generateSasCsv(data.criteria, data.studentResult, titleSuffix, generateDate)}
+                onClick={() => generateSasCsv(data.criteria, data.studentResult, title, generateDate)}
             >
                 Download SAS Upload
             </Button>
             <Button
                 width="100%"
                 isDisabled={!data}
-                onClick={() =>
-                    generateCheckingVerifyingCsv(data.criteria, data.studentResult, titleSuffix, generateDate)
-                }
+                onClick={() => {
+                    const assignmentNameWeightage = assignment.name;
+                    const assignmentName = assignmentNameWeightage.split(' - ')[0];
+                    const weightage = assignmentNameWeightage.split(' - ')[1];
+
+                    // orgUnit.name = moduleCode : moduleName
+                    const moduleName = orgUnit.name.split(' : ')[1];
+
+                    // orgUnit.code = moduleCode-semesterCode
+                    const moduleCode = orgUnit.code.split('-')[0];
+                    const semesterCode = orgUnit.code.split('-')[1];
+                    const acadYearCode = +semesterCode.substring(0, 2);
+                    const acadYear = `AY${acadYearCode}/${acadYearCode + 1}`;
+                    const semester = +semesterCode.substring(2, 3);
+
+                    generateCheckingVerifyingCsv(data.criteria, data.studentResult, generateDate, {
+                        institution: 'Singapore Polytechnic',
+                        school: 'School of Computing',
+                        moduleCode,
+                        moduleName,
+                        acadYear,
+                        semester,
+                        assignmentName,
+                        weightage,
+                    });
+                }}
             >
                 Download Checker/Verifier
             </Button>
@@ -89,14 +114,16 @@ function ScraperDownload({ data, titleSuffix, startDate }) {
 
 function ScraperProgress({ processedStudent, totalStudent, startDate }) {
     return (
-        <Stat>
-            <StatLabel>Progress</StatLabel>
-            <StatNumber>
-                {processedStudent || '--'}/{totalStudent || '--'} (
-                {totalStudent && Math.ceil((processedStudent / totalStudent) * 100)}%)
-            </StatNumber>
-            <StatHelpText>Started at {startDate.toLocaleString()}</StatHelpText>
-        </Stat>
+        <Container>
+            <Stat>
+                <StatLabel>Progress</StatLabel>
+                <StatNumber>
+                    {processedStudent || '--'}/{totalStudent || '--'} (
+                    {totalStudent && Math.ceil((processedStudent / totalStudent) * 100)}%)
+                </StatNumber>
+                <StatHelpText>Started at {startDate.toLocaleString()}</StatHelpText>
+            </Stat>
+        </Container>
     );
 }
 
@@ -143,24 +170,18 @@ function ScraperSteps({ orgUnit, assignment, rubric }) {
         );
 
     return (
-        <Stack spacing={5}>
+        <Flex>
             <ScraperStepsList stepNumber={stepNumber} error={error} />
-            <Divider />
-            <Flex>
+            <Stack spacing={5}>
                 <ScraperProgress
                     processedStudent={processedStudent}
                     totalStudent={totalStudent}
                     startDate={startDate}
                 />
-                <ScraperDownload
-                    data={data}
-                    titleSuffix={`${orgUnit.name}-${assignment.name}-${rubric.name}`}
-                    startDate={startDate}
-                />
-            </Flex>
-            <Divider />
-            {data && <ScraperChart data={data} />}
-        </Stack>
+                <ScraperDownload orgUnit={orgUnit} assignment={assignment} data={data} startDate={startDate} />
+            </Stack>
+            <ScraperChart data={data} />
+        </Flex>
     );
 }
 
@@ -174,9 +195,6 @@ export default function SingleScraper({ scraper: { orgUnit, assignment, rubric }
         <Card width="100%">
             <CardHeader>
                 <HStack spacing={2}>
-                    <Heading size="xs" textTransform="uppercase" onClick={handleToggle}>
-                        [{orgUnit.name}] {assignment.name} - {rubric.name}
-                    </Heading>
                     <IconButton icon={show ? <BiHide /> : <BiShowAlt />} onClick={handleToggle} />
                     <IconButton
                         icon={<BsTrash />}
@@ -184,6 +202,9 @@ export default function SingleScraper({ scraper: { orgUnit, assignment, rubric }
                         bgColor="salmon"
                         color="white"
                     />
+                    <Heading size="xs" textTransform="uppercase" onClick={handleToggle}>
+                        [{orgUnit.name}] {assignment.name} - {rubric.name}
+                    </Heading>
                 </HStack>
             </CardHeader>
             <Collapse in={show}>
