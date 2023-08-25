@@ -67,12 +67,27 @@ function ScraperStepsList({ stepNumber, error }) {
 
 function ScraperDownload({ orgUnit, assignment, data, title, startDate }) {
     const generateDate = startDate.toLocaleString().replace(', ', 'T');
+
+    const assignmentNameWeightage = assignment.name;
+    const assignmentName = assignmentNameWeightage.split(' - ')[0];
+    const weightage = assignmentNameWeightage.split(' - ')[1];
+
+    // orgUnit.name = moduleCode : moduleName
+    const moduleName = orgUnit.name.split(' : ')[1];
+
+    // orgUnit.code = moduleCode-semesterCode
+    const moduleCode = orgUnit.code.split('-')[0];
+    const semesterCode = orgUnit.code.split('-')[1];
+    const acadYearCode = +semesterCode.substring(0, 2);
+    const acadYear = `AY${acadYearCode}/${acadYearCode + 1}`;
+    const semester = +semesterCode.substring(2, 3);
+
     return (
         <VStack width={300}>
             <Button
                 width="100%"
                 isDisabled={!data}
-                onClick={() => generateSasCsv(data.criteria, data.studentResult, title, generateDate)}
+                onClick={() => generateSasCsv(data.criteria, data.studentResult, assignmentName, generateDate)}
             >
                 Download SAS Upload
             </Button>
@@ -80,20 +95,6 @@ function ScraperDownload({ orgUnit, assignment, data, title, startDate }) {
                 width="100%"
                 isDisabled={!data}
                 onClick={() => {
-                    const assignmentNameWeightage = assignment.name;
-                    const assignmentName = assignmentNameWeightage.split(' - ')[0];
-                    const weightage = assignmentNameWeightage.split(' - ')[1];
-
-                    // orgUnit.name = moduleCode : moduleName
-                    const moduleName = orgUnit.name.split(' : ')[1];
-
-                    // orgUnit.code = moduleCode-semesterCode
-                    const moduleCode = orgUnit.code.split('-')[0];
-                    const semesterCode = orgUnit.code.split('-')[1];
-                    const acadYearCode = +semesterCode.substring(0, 2);
-                    const acadYear = `AY${acadYearCode}/${acadYearCode + 1}`;
-                    const semester = +semesterCode.substring(2, 3);
-
                     generateCheckingVerifyingCsv(data.criteria, data.studentResult, generateDate, {
                         institution: 'Singapore Polytechnic',
                         school: 'School of Computing',
