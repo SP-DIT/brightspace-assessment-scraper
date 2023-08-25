@@ -30,26 +30,18 @@ const processData = (data) => {
 export default function GradesDistribution({ data }) {
     const { sections: stacks, output: chartData } = useMemo(() => processData(data), [data]);
     return (
-        <Card>
-            <CardBody>
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="grade" />
-                        <YAxis />
-                        <Legend
-                            wrapperStyle={{ fontSize: '10px', textAlign: 'center' }}
-                            verticalAlign="bottom"
-                            height={50}
-                        />
-                        <Tooltip />
+        <ResponsiveContainer height={300} width={400}>
+            <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="grade" />
+                <YAxis />
+                <Legend wrapperStyle={{ fontSize: '10px', textAlign: 'center' }} verticalAlign="bottom" height={50} />
+                <Tooltip />
 
-                        {stacks.sort().map((stack, index) => (
-                            <Bar key={stack} dataKey={stack} stackId="a" fill={colors[index]} />
-                        ))}
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardBody>
-        </Card>
+                {stacks.sort().map((stack, index) => (
+                    <Bar key={stack} dataKey={stack} stackId="a" fill={colors[index]} />
+                ))}
+            </BarChart>
+        </ResponsiveContainer>
     );
 }

@@ -43,9 +43,9 @@ const fakeCriteria: Criteria[] = Array(10)
 
 const fakeAssessmentList: Assignment[] = Array(3)
     .fill(null)
-    .map(() => ({
+    .map((_, index) => ({
         Id: +faker.string.numeric(6),
-        Name: faker.commerce.productName(),
+        Name: `CA${index + 1} - 30%`,
         Assessment: {
             Rubrics: [
                 {
@@ -62,13 +62,16 @@ const fakeSemesterList: string[] = Array(5)
 
 const fakeModuleList: Module[] = Array(50)
     .fill(null)
-    .map(() => ({
-        OrgUnit: {
-            Id: +faker.string.numeric(6),
-            Name: faker.commerce.productName(),
-            Code: `${faker.commerce.productAdjective()}-${fakeSemesterList[faker.number.int(4)]}`,
-        },
-    }));
+    .map(() => {
+        const moduleCode = faker.string.alphanumeric({ length: 6 });
+        return {
+            OrgUnit: {
+                Id: +faker.string.numeric(6),
+                Name: `${moduleCode} : ${faker.lorem.words(2)}`,
+                Code: `${moduleCode}-${fakeSemesterList[faker.number.int(4)]}`,
+            },
+        };
+    });
 
 export default function BrightspaceApi(brightspaceBase, brightspaceApiBase) {
     async function getClassList(organizationId): Promise<Student[]> {

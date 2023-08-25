@@ -63,11 +63,15 @@ function downloadFile(data, outputFilename) {
 export function generateCheckingVerifyingCsv(
     criteria,
     studentResult: StudentScore[],
-    title,
     dateTimeGenerated = getDateTimeGenerated(),
-    options = {
+    metadata = {
+        institution: 'Singapore Polytechnic',
+        school: 'School of Computing',
+        moduleCode: 'STXXXX',
+        moduleName: 'XXXX XXXX XXXX',
         acadYear: 'AYXX/XX',
         semester: 'X',
+        assignmentName: 'XXXX',
         weightage: '???',
     }
 ) {
@@ -79,7 +83,18 @@ export function generateCheckingVerifyingCsv(
         criteria.reduce((total, { max }) => total + max, 0), // max total
     ];
 
-    const criteriaNames = ['Student Id', 'Name', 'Class', ...criteria.map(({ name }) => name), 'Total', 'Grade'];
+    const metadataRows = [
+        ...Object.entries(metadata).map(([key, value]) => [key.replace(/([A-Z])/g, ' $1').toUpperCase(), value]),
+    ];
+
+    const criteriaNames = [
+        'Student Id',
+        'Name',
+        'Class',
+        ...criteria.map(({ name }) => name),
+        `${metadata.assignmentName}\n(for SAS ${metadata.weightage})`,
+        'Grade',
+    ];
 
     const sections: Set<string> = new Set();
     const sectionsMap = {};
@@ -108,23 +123,22 @@ export function generateCheckingVerifyingCsv(
     sectionsArray.sort().forEach((section) => {
         const sectionRows = sectionsMap[section].sort();
 
-        const aoa = [[options.acadYear, `Semester ${options.semester}`, title, 'Weightage:', options.weightage], []];
+        const aoa: any[] = [...metadataRows, ['CLASS', section], []];
         aoa.push([]);
         aoa.push(criteriaMax);
         aoa.push(criteriaNames);
 
         sectionRows.forEach((row) => aoa.push(row));
 
-        aoa.push([]);
-        aoa.push(['Marked by:', '', 'date:', '', 'Sign:']);
-        aoa.push(['Checked by:', '', 'date:', '', 'Sign:']);
-
-        const outputFilename = `${section}_${title}.xlsx`;
+        const outputFilename = `${metadata.acadYear}S${metadata.semester}-${metadata.moduleCode}-${section.replaceAll(
+            '/',
+            ''
+        )}-${metadata.assignmentName}.xlsx`;
 
         aoaBySection.push({ aoa, outputFilename });
     });
 
-    downloadXlsxZips(aoaBySection, `${title}_${dateTimeGenerated}.zip`);
+    downloadXlsxZips(aoaBySection, `brightspace_assignment-${dateTimeGenerated}.zip`);
 }
 
 export function generateSasCsvData(studentResult: StudentScore[], title) {
