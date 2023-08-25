@@ -4,6 +4,7 @@ import ModulePicker from './ModulePicker';
 import AssignmentPicker from './AssignmentPicker';
 
 function ExpandedComponent({ data }) {
+    console.log(data.OrgUnit);
     return <AssignmentPicker orgUnit={data.OrgUnit} />;
 }
 

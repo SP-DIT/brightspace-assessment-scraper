@@ -4,7 +4,7 @@ import { Button, Select, Stack } from '@chakra-ui/react';
 import { MdOutlineAddCircle } from 'react-icons/md';
 import ScraperContext from './ScraperContext';
 
-export default function AssignmentPicker({ orgUnit: { Id: orgUnitId, Name: moduleName } }) {
+export default function AssignmentPicker({ orgUnit: { Id: orgUnitId, Name: moduleName, Code: orgUnitCode } }) {
     const { brightspaceApi, addScraper } = useContext(ScraperContext);
     const [assignmentList, setAssignmentList] = useState();
     const [selectedAssignment, setSelectedAssignment] = useState();
@@ -25,7 +25,7 @@ export default function AssignmentPicker({ orgUnit: { Id: orgUnitId, Name: modul
         const assignment = assignmentList[selectedAssignment];
         const rubric = assignment.Assessment.Rubrics[selectedRubric];
         addScraper({
-            orgUnit: { id: orgUnitId, name: moduleName },
+            orgUnit: { id: orgUnitId, name: moduleName, code: orgUnitCode },
             assignment: {
                 id: assignment.Id,
                 name: assignment.Name,
